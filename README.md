@@ -60,7 +60,7 @@ index.html          앱 전체 (단일 파일 · 외부 의존 0 · 더블클릭
 ocst-logo.svg       로고 (앱에는 인라인으로 들어가 있고, 이 파일은 별도 용도용)
 hex64.json          64괘 binary·번호·이름
 yao-b1~b4.json      효사 (16괘씩 4배치)
-yao.json            다섯 배치를 병합한 384효
+yao.json            네 배치를 병합한 384효
 yao-notes-b1~b5.json  효별 궁리노트 + 궁리등급
 yao-notes.json      병합본
 gua.json            괘별 상황 서술 [라벨, 서술]
@@ -71,7 +71,7 @@ inject.mjs          위 데이터를 index.html에 주입 (멱등)
 revise-copy.mjs     문항 카피 개정 스크립트
 ```
 
-`index.html`은 데이터를 인라인으로 품고 있습니다. 소스 파일(`hex64.json` · `empiric.js` · `yao.json`)을 고친 뒤 아래를 돌리면 앱의 `HEX64` · `EMPIRIC` · `YAO` 세 상수가 갱신됩니다. 몇 번을 돌려도 결과가 같습니다.
+`index.html`은 데이터를 인라인으로 품고 있습니다. 소스 파일을 고친 뒤 아래를 돌리면 앱의 `HEX64` · `EMPIRIC` · `YAO` · `GUA` · `NOTE` 다섯 상수가 갱신됩니다. 몇 번을 돌려도 결과가 같습니다.
 
 ```bash
 node inject.mjs
@@ -79,8 +79,8 @@ node inject.mjs
 
 노션 원본이 바뀌었을 때의 순서는 이렇습니다.
 
-1. 바뀐 구간만 노션에서 다시 쿼리 → 해당 `yao-b*.json` 갱신
-2. 네 배치를 병합해 `yao.json` 생성
+1. 바뀐 구간만 노션에서 다시 쿼리 → 해당 `yao-b*.json` 또는 `yao-notes-b*.json` 갱신
+2. 궁리노트는 `node merge-notes.mjs`로 병합 (효사는 손으로 병합)
 3. `node inject.mjs`
 
 ## 표기 규칙
@@ -94,8 +94,7 @@ node inject.mjs
 - 엔진 · 리포트 6면 · 판정 테이블: 완료 (64괘 × 6효 전수 검증)
 - 효사 원문·직역·점사어: **64괘 384효 전부**
 - 궁리노트(왜 이렇게 읽나) + 궁리등급: **64괘 384효 전부** (통계 폴백 0)
-- 괘별 상황 서술: 8괘 (56괘 남음)
-- 64괘 상황용 서술: 미착수
+- 괘별 상황 서술: **8괘** (56괘 남음 — 유일하게 비어 있는 칸)
 
 ## 출처
 
