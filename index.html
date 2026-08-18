@@ -16,10 +16,12 @@ body{margin:0;background:var(--bg);color:var(--ink);
   font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;line-height:1.7}
 .wrap{max-width:760px;margin:0 auto;padding:28px 18px 80px}
 h1,h2,h3,.serif{font-family:"Noto Serif KR",serif;font-weight:700}
-header.top{text-align:center;padding:26px 0 20px;border-bottom:1px solid var(--line);margin-bottom:26px}
-header.top .eyebrow{font-size:12px;letter-spacing:.28em;color:var(--gold);font-weight:700}
-header.top h1{font-size:30px;margin:8px 0 6px;color:var(--navy)}
+header.top{text-align:center;padding:34px 0 24px;border-bottom:1px solid var(--line);margin-bottom:26px}
+/* 로고는 viewBox 비율(348:110)로 폭에 맞춰 커진다. 사파리 대비 width/height 둘 다 명시 */
+header.top .logo{display:block;margin:0 auto 14px;width:min(330px,78vw);height:auto;
+  aspect-ratio:348/110}
 header.top p{margin:0;color:var(--mute);font-size:14px}
+@media(max-width:420px){header.top{padding:26px 0 20px}}
 
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}
 .card.hero{background:linear-gradient(135deg,#FFFCE5,#F5EFFF,#E5F0FF);border:none}
@@ -92,8 +94,25 @@ ul.acts li{margin:5px 0;font-size:14px}
 <body>
 <div class="wrap">
 <header class="top">
-  <div class="eyebrow">O C S T</div>
-  <h1>변화도 <span style="font-size:18px;color:var(--gold)">變化圖</span></h1>
+  <!-- 로고. 원(O)이 심볼이고 나머지가 CST — OMST와 같은 뼈대.
+       원 안의 효 막대는 OMST와 음양을 뒤집어, 한 획이 바뀐 것으로 읽히게 했다. -->
+  <svg class="logo" viewBox="0 0 348 110" xmlns="http://www.w3.org/2000/svg"
+       role="img" aria-label="OCST · Oriental Change Scan Tool">
+    <g transform="translate(2, 12)">
+      <circle cx="47" cy="45" r="45" fill="none" stroke="#002366" stroke-width="10"/>
+      <path d="M47,0 A22.5,22.5 0 0,0 47,45 A22.5,22.5 0 0,1 47,90"
+            fill="none" stroke="#002366" stroke-width="1.2" stroke-linecap="round"/>
+      <g stroke="#002366" stroke-width="3.5" stroke-linecap="round">
+        <line x1="24" y1="58" x2="30" y2="58"/>
+        <line x1="37" y1="58" x2="43" y2="58"/>
+        <line x1="53" y1="32" x2="80" y2="32"/>
+      </g>
+      <text x="105" y="68" fill="#002366" textLength="185" lengthAdjust="spacing"
+            style="font-family:'Playfair Display',Georgia,serif;font-size:80px;font-weight:200;letter-spacing:12px;">CST</text>
+      <text x="85" y="96" fill="#546E7A" textLength="235" lengthAdjust="spacing"
+            style="font-family:Arial,Helvetica,sans-serif;font-size:7.5px;font-weight:300;letter-spacing:0.5px;">ORIENTAL CHANGE SCAN TOOL</text>
+    </g>
+  </svg>
   <p>점이 아니라, 지금 놓인 판의 구조를 읽습니다</p>
 </header>
 

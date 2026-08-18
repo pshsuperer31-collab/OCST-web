@@ -57,28 +57,27 @@ OCST는 괘를 **상황의 구조에서 유도**합니다. 같은 입력이면 �
 
 ```
 index.html          앱 전체 (단일 파일 · 외부 의존 0 · 더블클릭으로 열림)
+ocst-logo.svg       로고 (앱에는 인라인으로 들어가 있고, 이 파일은 별도 용도용)
 hex64.json          64괘 binary·번호·이름
-yao-b1.json         효사 1~16괘
-yao-b2.json         효사 17~32괘
-yao.json            위 둘을 병합한 것
+yao-b1~b4.json      효사 (16괘씩 4배치)
+yao.json            네 배치를 병합한 384효
 empiric.js          판정 실측 테이블
 calibrate.mjs       384효 집계 → EMPIRIC 생성
+inject.mjs          위 데이터를 index.html에 주입 (멱등)
 revise-copy.mjs     문항 카피 개정 스크립트
 ```
 
-`index.html`에는 세 개의 주입 토큰이 있습니다. 데이터를 갱신할 때는 토큰 자리에 넣습니다.
-
-```
-/*__HEX64__*/    ← hex64.json
-/*__EMPIRIC__*/  ← empiric.js (calibrate.mjs가 생성)
-/*__YAO__*/      ← yao.json
-```
-
-주입 예:
+`index.html`은 데이터를 인라인으로 품고 있습니다. 소스 파일(`hex64.json` · `empiric.js` · `yao.json`)을 고친 뒤 아래를 돌리면 앱의 `HEX64` · `EMPIRIC` · `YAO` 세 상수가 갱신됩니다. 몇 번을 돌려도 결과가 같습니다.
 
 ```bash
-node -e "const fs=require('fs');let h=fs.readFileSync('index.html','utf8');h=h.replace('/*__YAO__*/{}',fs.readFileSync('yao.json','utf8'));fs.writeFileSync('index.html',h)"
+node inject.mjs
 ```
+
+노션 원본이 바뀌었을 때의 순서는 이렇습니다.
+
+1. 바뀐 구간만 노션에서 다시 쿼리 → 해당 `yao-b*.json` 갱신
+2. 네 배치를 병합해 `yao.json` 생성
+3. `node inject.mjs`
 
 ## 표기 규칙
 
@@ -89,7 +88,7 @@ node -e "const fs=require('fs');let h=fs.readFileSync('index.html','utf8');h=h.r
 ## 현재 상태
 
 - 엔진 · 리포트 6면 · 판정 테이블: 완료 (64괘 × 6효 전수 검증)
-- 효사: **32/64괘 (192효)** 이관 완료. 33~64괘는 미이관 (해당 괘는 통계로 폴백)
+- 효사: **64괘 384효 전부** 이관 완료 (통계 폴백 0)
 - 64괘 상황용 서술: 미착수
 
 ## 출처

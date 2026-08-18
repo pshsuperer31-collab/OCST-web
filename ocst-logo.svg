@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="180" viewBox="0 0 348 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OCST · Oriental Change Scan Tool">
+  <g transform="translate(2, 12)">
+
+    <circle cx="47" cy="45" r="45" fill="none" stroke="#002366" stroke-width="10"/>
+
+    <path d="M47,0 A22.5,22.5 0 0,0 47,45 A22.5,22.5 0 0,1 47,90" fill="none" stroke="#002366" stroke-width="1.2" stroke-linecap="round"/>
+
+    <!-- 효 막대. OMST와 같은 자리·같은 폭이되 음양을 뒤집었다.
+         OMST = 왼쪽아래 陽 / 오른쪽위 陰,  OCST = 왼쪽아래 陰 / 오른쪽위 陽.
+         나란히 놓으면 한 획이 바뀐 것으로 읽힌다 — 之卦가 이 도구의 축이다. -->
+    <g stroke="#002366" stroke-width="3.5" stroke-linecap="round">
+      <line x1="24" y1="58" x2="30" y2="58"/>
+        <line x1="37" y1="58" x2="43" y2="58"/>
+      <line x1="53" y1="32" x2="80" y2="32" />
+    </g>
+
+    <text x="105" y="68" fill="#002366"
+          textLength="185" lengthAdjust="spacing"
+          style="font-family: 'Playfair Display', Georgia, serif; font-size: 80px; font-weight: 200; letter-spacing: 12px;">CST</text>
+
+    <text x="85" y="96" fill="#546E7A"
+          textLength="235" lengthAdjust="spacing"
+          style="font-family: 'Arial', Helvetica, sans-serif; font-size: 7.5px; font-weight: 300; text-transform: uppercase; letter-spacing: 0.5px;">ORIENTAL CHANGE SCAN TOOL</text>
+  </g>
+</svg>
