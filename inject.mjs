@@ -4,6 +4,7 @@
  *   HEX64   ← hex64.json    64괘 binary·번호·이름
  *   EMPIRIC ← empiric.js    판정 실측 테이블 (calibrate.mjs가 생성)
  *   YAO     ← yao.json      384효 효사 (yao-b1~b4.json 병합본)
+ *   GUA     ← gua.json      괘별 상황 서술 [라벨, 서술]
  *
  * 첫 주입 때는 `/*__NAME__*\/{}` 토큰을, 이후에는 이미 들어있는 값을 갈아끼운다.
  * 몇 번을 돌려도 결과가 같다.
@@ -18,6 +19,7 @@ const TARGETS = [
   { name: 'HEX64',   from: 'hex64.json',  read: f => fs.readFileSync(f, 'utf8').trim() },
   { name: 'EMPIRIC', from: 'empiric.js',  read: f => fs.readFileSync(f, 'utf8').replace(/^const EMPIRIC = /, '').replace(/;\s*$/, '') },
   { name: 'YAO',     from: 'yao.json',    read: f => fs.readFileSync(f, 'utf8').trim() },
+  { name: 'GUA',     from: 'gua.json',    read: f => fs.readFileSync(f, 'utf8').trim() },
 ];
 
 let html = fs.readFileSync(PATH, 'utf8');

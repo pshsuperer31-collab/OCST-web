@@ -65,6 +65,11 @@ input.title{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-r
 .guarow{display:flex;gap:20px;align-items:center}
 
 .name{font-size:24px;color:var(--navy);margin:0}
+/* 괘의 상황 라벨 — ①은 큼직하게, 나머지 카드는 이름 옆에 작게 */
+.gtag{margin-top:5px;font-size:15px;font-weight:700;color:var(--gold)}
+.glabel{display:block;margin-top:3px;font-size:12.5px;color:var(--gold);font-weight:700}
+.gdesc{margin:16px 0 0;font-size:14.5px;line-height:1.75;color:var(--ink);
+  background:rgba(255,255,255,.62);border-radius:14px;padding:14px 16px}
 .num{font-size:12px;color:var(--mute);letter-spacing:.1em}
 .struct{font-size:14px;color:var(--mute);margin-top:6px}
 .verdict{display:inline-block;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700}
@@ -305,6 +310,25 @@ function label(b){
   var h=BYBIN[b];
   return h ? h.ko+' <span style="font-size:12px;color:var(--mute)">'+h.hj+'</span>' : b;
 }
+
+/* 괘별 상황 서술 — GUA[괘번호] = [라벨, 서술].
+   ①본괘는 라벨+서술을, ③互 ④綜 ⑤之 ⑥序卦·錯은 라벨만 받는다.
+   아직 안 쓴 괘는 비워두고 그 자리는 예전처럼 괘 이름만 나온다. */
+const GUA = {
+"1":["막힘없이 밀어붙이는 판","여섯 자리가 다 강해서 걸릴 것이 없는 판입니다. 밀면 밀리기 때문에, 위험은 바깥이 아니라 과속에서 옵니다. 이 괘에서 국면이 갈리는 것은 오직 얼마나 왔느냐 하나예요 — 잠긴 용에서 끝까지 오른 용까지."],
+"2":["받아서 이루는 판","내가 시작하는 판이 아니라, 오는 것을 받아 완성하는 판입니다. 버티고 따르는 것이 일이라 앞질러 나서면 어그러집니다. 다만 서리를 밟으면 얼음이 오듯, 조짐은 미리 읽어두어야 해요."],
+"3":["시작의 진통","무언가 막 시작됐는데 앞이 험한 자리입니다. 밀고 나갈 힘은 아래에서 치미는데 위가 막혀 있어, 나아가려 할수록 엉킵니다. 지금은 뚫을 때가 아니라 자리를 잡고 사람을 얻을 때예요."],
+"4":["아직 모르는 판","몰라서 못 하는 자리입니다. 답을 쥔 쪽이 따로 있고, 내가 물어야 풀립니다. 억지로 깨우치려 들면 반발이 오지만, 물어올 때까지 기다리면 저절로 열립니다."],
+"5":["기다려야 하는 판","힘은 충분한데 앞에 험한 것이 놓여 아직 못 건너는 자리입니다. 실력이 모자란 게 아니라 때가 안 된 것이라, 조급하면 진흙에 빠집니다. 먹고 마시며 기다리는 것이 이 괘의 일이에요."],
+"6":["다투게 되는 판","위는 위대로 아래는 아래대로 등을 돌린 자리입니다. 서로 어긋나 다툼이 생기는데, 이겨도 남는 것이 없습니다. 오래 끌지 않고 일찍 물러나는 쪽이 실속을 챙깁니다."],
+"7":["사람을 움직여야 하는 판","혼자 할 수 없어 여럿을 움직여야 하는 자리입니다. 명분과 규율이 서면 되고, 그것이 흐트러지면 이겨도 시체를 싣고 돌아옵니다. 누구에게 맡기느냐가 결과를 가릅니다."],
+"8":["붙어야 사는 판","혼자 서는 자리가 아니라 어디에 붙느냐로 갈리는 자리입니다. 중심이 분명하면 사람이 모이고, 늦게 붙으면 남는 자리가 없습니다. 다만 아무에게나 붙으면 사람 같지 않은 이를 따르게 돼요."]
+};
+function guaOf(b){ var h=BYBIN[b]; return (h && GUA[h.n]) || null; }
+function labelFull(b){
+  var g=guaOf(b);
+  return label(b)+(g?'<span class="glabel">'+g[0]+'</span>':'');
+}
 /* 받침 유무에 따른 조사 — 괘 이름이 문장에 박히므로 필요 */
 function batchim(w){
   var c=w.charCodeAt(w.length-1)-0xAC00;
@@ -354,6 +378,7 @@ function run(){
   var yao   = YAO[h.n] ? YAO[h.n][i] : null;          // [효사원문, 직역, 판정어]
   var vKey  = yao ? verdictFromYao(yao[2]) : null;    // 효사에 점사어가 있으면 그쪽이 우선
   var V     = vKey ? VERDICT[vKey] : {n:J.label, c:J.cls};
+  var G     = guaOf(b);                                // 본괘 상황 서술 [라벨, 서술]
   var title = document.getElementById('title').value.trim() || '이름 없는 상황';
 
   var R=document.getElementById('result');
@@ -363,8 +388,10 @@ function run(){
     '<div class="guarow">'+guaSVG(y,i)+
       '<div><div class="num">제 '+h.n+' 괘</div>'+
         '<h2 class="name">'+h.ko+' <span style="font-size:15px;color:var(--gold)">'+h.hj+'</span></h2>'+
+        (G?'<div class="gtag">'+G[0]+'</div>':'')+
         '<div class="struct">위 '+TRI[up].sym+' '+TRI[up].ko+'('+TRI[up].im+') · 아래 '+TRI[lo].sym+' '+TRI[lo].ko+'('+TRI[lo].im+')</div>'+
       '</div></div>'+
+    (G?'<p class="gdesc">'+G[1]+'</p>':'')+
     '<div class="grid2" style="margin-top:16px">'+
       '<div class="mini" style="background:#fff"><h4>바깥 판 — '+UPPER[up].t+'</h4><p class="why" style="margin:0">'+UPPER[up].d+'</p></div>'+
       '<div class="mini" style="background:#fff"><h4>내 기반 — '+LOWER[lo].t+'</h4><p class="why" style="margin:0">'+LOWER[lo].d+'</p></div>'+
@@ -396,14 +423,14 @@ function run(){
   '<div class="card">'+
     '<div class="sec-label">③ 속 사 정 &nbsp;·&nbsp; 互卦</div>'+
     '<div class="guarow">'+guaSVG(toY(hb),-1)+'<div>'+
-      '<h3 style="margin:0;font-size:18px;color:var(--navy)">'+label(hb)+'</h3>'+
+      '<h3 style="margin:0;font-size:18px;color:var(--navy)">'+labelFull(hb)+'</h3>'+
       '<p class="why" style="margin:4px 0 0">겉으로 드러난 판 아래에서 실제로 굴러가는 동력입니다. '+
       '본괘와 다르게 읽힌다면, 지금 보이는 문제가 진짜 문제가 아닙니다.</p></div></div></div>'+
 
   '<div class="card">'+
     '<div class="sec-label">④ 상 대 의  판 &nbsp;·&nbsp; 綜卦(도전)</div>'+
     '<div class="guarow">'+guaSVG(toY(zb),-1)+'<div>'+
-      '<h3 style="margin:0;font-size:18px;color:var(--navy)">'+label(zb)+'</h3>'+
+      '<h3 style="margin:0;font-size:18px;color:var(--navy)">'+labelFull(zb)+'</h3>'+
       '<p class="why" style="margin:4px 0 0">같은 상황을 통째로 뒤집어 저쪽에서 본 그림입니다. '+
       '나에게 <b>'+h.ko+'</b>인 판이, 상대에게는 <b>'+BYBIN[zb].ko+'</b>'+
       (batchim(BYBIN[zb].ko)?'으로':'로')+' 보입니다.'+
@@ -414,7 +441,7 @@ function run(){
     '<div class="sec-label">⑤ 이 렇 게  하 면 &nbsp;·&nbsp; 之卦</div>'+
     '<div class="guarow">'+guaSVG(toY(jb),i)+'<div>'+
       '<div class="num">'+POSGRAM[i].n+'爻 한 획을 바꾸면</div>'+
-      '<h3 style="margin:2px 0 0;font-size:20px;color:var(--navy)">'+label(jb)+'</h3></div></div>'+
+      '<h3 style="margin:2px 0 0;font-size:20px;color:var(--navy)">'+labelFull(jb)+'</h3></div></div>'+
     '<ul class="acts">'+
       '<li><b>손댈 지점:</b> '+LEVER[i]+'</li>'+
       '<li><b>바뀌는 방향:</b> '+(y[i]?'양(陽)에서 음(陰)으로 — 밀던 것을 놓습니다.'
@@ -424,10 +451,10 @@ function run(){
 
   '<div class="grid2">'+
     '<div class="card"><div class="sec-label">⑥ 다 음  국 면 · 序卦</div>'+
-      '<h3 style="margin:0;font-size:17px;color:var(--navy)">'+label(nx.b)+'</h3>'+
+      '<h3 style="margin:0;font-size:17px;color:var(--navy)">'+labelFull(nx.b)+'</h3>'+
       '<p class="why">序卦傳이 놓은 다음 마디입니다.</p></div>'+
     '<div class="card"><div class="sec-label">뒤 집 힌  판 · 錯卦</div>'+
-      '<h3 style="margin:0;font-size:17px;color:var(--navy)">'+label(cb)+'</h3>'+
+      '<h3 style="margin:0;font-size:17px;color:var(--navy)">'+labelFull(cb)+'</h3>'+
       '<p class="why">모든 조건이 정반대였을 때. 리스크 점검용입니다.</p></div></div>'+
 
   '<div class="card"><div class="sec-label">궤 적</div><div class="hist" id="hist"></div></div>'+
