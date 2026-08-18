@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 파비콘 — 로고에서 원 심볼만 떼어냈다. 작게 줄여도 읽히도록 여백을 좁힌다. -->
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(5, 5)">
+    <circle cx="45" cy="45" r="43" fill="none" stroke="#002366" stroke-width="10"/>
+    <path d="M45,2 A21.5,21.5 0 0,0 45,45 A21.5,21.5 0 0,1 45,88"
+          fill="none" stroke="#002366" stroke-width="2" stroke-linecap="round"/>
+    <g stroke="#002366" stroke-width="5" stroke-linecap="round">
+      <line x1="22" y1="57" x2="29" y2="57"/>
+      <line x1="36" y1="57" x2="43" y2="57"/>
+      <line x1="51" y1="33" x2="77" y2="33"/>
+    </g>
+  </g>
+</svg>

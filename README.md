@@ -1,4 +1,4 @@
-# OCST · 변화도 (變化圖)
+# OCST
 
 **Oriental Change Scan Tool** — 주역을 점술이 아니라 **변화 진단 도구**로 쓰는 앱.
 
@@ -58,6 +58,9 @@ OCST는 괘를 **상황의 구조에서 유도**합니다. 같은 입력이면 �
 ```
 index.html          앱 전체 (단일 파일 · 외부 의존 0 · 더블클릭으로 열림)
 ocst-logo.svg       로고 (앱에는 인라인으로 들어가 있고, 이 파일은 별도 용도용)
+favicon.svg         파비콘 — 로고에서 원 심볼만
+og-image.svg        링크 미리보기 카드 원본
+og-image.png        위를 sharp로 구운 것 (1200x630, og:image)
 hex64.json          64괘 binary·번호·이름
 yao-b1~b4.json      효사 (16괘씩 4배치)
 yao.json            네 배치를 병합한 384효
