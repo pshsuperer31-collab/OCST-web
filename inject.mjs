@@ -25,6 +25,7 @@ const TARGETS = [
   { name: 'EMPIRIC', from: 'empiric.js',  read: f => fs.readFileSync(f, 'utf8').replace(/^const EMPIRIC = /, '').replace(/;\s*$/, '').trim() },
   { name: 'YAO',     from: 'yao.json',    read: compact },
   { name: 'GUA',     from: 'gua.json',    read: compact },
+  { name: 'NOTE',    from: 'yao-notes.json', read: compact },
 ];
 
 let html = fs.readFileSync(PATH, 'utf8');
