@@ -1,0 +1,8 @@
+# 배포에는 앱 한 파일만 나가면 된다 (소스 데이터·스크립트는 repo에만)
+calibrate.mjs
+revise-copy.mjs
+empiric.js
+yao-b1.json
+yao-b2.json
+yao.json
+hex64.json
