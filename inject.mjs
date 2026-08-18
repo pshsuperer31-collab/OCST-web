@@ -5,6 +5,8 @@
  *   EMPIRIC ← empiric.js    판정 실측 테이블 (calibrate.mjs가 생성)
  *   YAO     ← yao.json      384효 효사 (yao-b1~b4.json 병합본)
  *   GUA     ← gua.json      괘별 상황 서술 [라벨, 서술]
+ *   NOTE    ← yao-notes.json  효별 궁리노트 + 궁리등급
+ *   QSETS   ← qsets.json     질문 세트 (무엇을 묻느냐에 따른 6문항)
  *
  * 첫 주입 때는 `/*__NAME__*\/{}` 토큰을, 이후에는 이미 들어있는 값을 갈아끼운다.
  * 몇 번을 돌려도 결과가 같다.
@@ -26,6 +28,7 @@ const TARGETS = [
   { name: 'YAO',     from: 'yao.json',    read: compact },
   { name: 'GUA',     from: 'gua.json',    read: compact },
   { name: 'NOTE',    from: 'yao-notes.json', read: compact },
+  { name: 'QSETS',   from: 'qsets.json',   read: compact },
 ];
 
 let html = fs.readFileSync(PATH, 'utf8');
