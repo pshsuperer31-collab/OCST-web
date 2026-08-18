@@ -15,11 +15,16 @@ import fs from 'fs';
 
 const PATH = 'index.html';
 
+/* JSON은 파싱했다가 다시 찍어 한 줄로 만든다.
+   소스 파일은 사람이 읽기 좋게 여러 줄이어도 되지만, 주입되는 값은
+   반드시 한 줄이어야 한다 — 아래 교체 정규식이 한 줄 단위로 걸리므로. */
+const compact = f => JSON.stringify(JSON.parse(fs.readFileSync(f, 'utf8')));
+
 const TARGETS = [
-  { name: 'HEX64',   from: 'hex64.json',  read: f => fs.readFileSync(f, 'utf8').trim() },
-  { name: 'EMPIRIC', from: 'empiric.js',  read: f => fs.readFileSync(f, 'utf8').replace(/^const EMPIRIC = /, '').replace(/;\s*$/, '') },
-  { name: 'YAO',     from: 'yao.json',    read: f => fs.readFileSync(f, 'utf8').trim() },
-  { name: 'GUA',     from: 'gua.json',    read: f => fs.readFileSync(f, 'utf8').trim() },
+  { name: 'HEX64',   from: 'hex64.json',  read: compact },
+  { name: 'EMPIRIC', from: 'empiric.js',  read: f => fs.readFileSync(f, 'utf8').replace(/^const EMPIRIC = /, '').replace(/;\s*$/, '').trim() },
+  { name: 'YAO',     from: 'yao.json',    read: compact },
+  { name: 'GUA',     from: 'gua.json',    read: compact },
 ];
 
 let html = fs.readFileSync(PATH, 'utf8');
