@@ -56,7 +56,14 @@ header.top .sub{margin:0;color:var(--mute);font-size:13px}
 .q .yao{font-size:12px;color:var(--mute);letter-spacing:.03em}
 .q .txt{font-size:15px;font-weight:600;margin:2px 0 10px}
 .opts{display:flex;gap:8px;flex-wrap:wrap}
-.hint{font-size:12.5px;color:var(--mute);margin-top:8px;padding-left:2px}
+.hint{font-size:12.5px;color:var(--mute);padding-left:2px;flex:1;min-width:180px}
+/* 긴가민가 — 답은 하나 고르되 그 획이 흔들린다고 표시해 둔다 */
+.qfoot{display:flex;gap:12px;align-items:flex-start;margin-top:8px;flex-wrap:wrap}
+.softbtn{flex:none;font-size:12px;padding:5px 11px;border-radius:999px;white-space:nowrap;
+  border:1px dashed var(--line);background:#fff;color:var(--mute);cursor:pointer}
+.softbtn:hover{border-color:var(--gold);color:var(--gold)}
+.softbtn.on{border-style:solid;border-color:var(--gold);background:#fdf8e8;
+  color:var(--gold);font-weight:700}
 .opts button{flex:1;min-width:180px;padding:11px 12px;border-radius:12px;border:1.5px solid var(--line);
   background:#fff;font-size:14px;cursor:pointer;font-family:inherit;transition:.15s}
 .opts button:hover{border-color:var(--navy)}
@@ -436,6 +443,7 @@ function batchim(w){
 
 /* ══════════════ UI ══════════════ */
 var ans=[null,null,null,null,null,null], stage=null, cardKey=null;
+var soft=[false,false,false,false,false,false];   // 긴가민가로 표시한 획
 function CARD(){ return QSETS.cards.filter(function(c){return c.k===cardKey})[0] || QSETS.cards[3]; }
 function QS(){ return QSETS.sets[CARD().set]; }   // 고른 카드가 가리키는 질문 세트
 
@@ -501,7 +509,8 @@ function renderQ(host,list,off){
     return '<div class="q"><div class="yao">'+q.y+'</div><div class="txt">'+q.t+'</div>'+
      '<div class="opts" data-i="'+(off+k)+'">'+
      '<button data-v="1">'+q.a+'</button><button data-v="0">'+q.b+'</button></div>'+
-     '<div class="hint">'+q.h+'</div></div>';
+     '<div class="qfoot"><div class="hint">'+q.h+'</div>'+
+     '<button class="softbtn" data-s="'+(off+k)+'">긴가민가</button></div></div>';
   }).join('');
   host.querySelectorAll('.opts').forEach(function(box){
     box.addEventListener('click',function(e){
@@ -510,10 +519,18 @@ function renderQ(host,list,off){
       btn.classList.add('on'); ans[+box.dataset.i]=+btn.dataset.v; check();
     });
   });
+  /* 답을 고르는 것과 별개로 켜고 끈다 — 괘는 여전히 하나로 정해지고,
+     표시한 획만 리포트에서 뒤집힌 판을 함께 보여준다. */
+  host.querySelectorAll('.softbtn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var k=+btn.dataset.s; soft[k]=!soft[k]; btn.classList.toggle('on',soft[k]);
+    });
+  });
 }
 function toStep2(){
   var s=QS(), c=CARD();
   ans=[null,null,null,null,null,null]; stage=null;
+  soft=[false,false,false,false,false,false];
   document.getElementById('askLabel').textContent=c.g;
   document.getElementById('askTitle').textContent=c.name;
   renderQ(document.getElementById('qLower'),s.L,0);
@@ -553,6 +570,38 @@ function run(){
   var note  = nRow ? nRow[0] : null;
   var gr    = nRow ? GRADE[nRow[1]] : null;
   var title = document.getElementById('title').value.trim() || '이름 없는 상황';
+
+  /* 긴가민가로 둔 획 — ⑤之卦(내가 손대서 바꾸는 획)와 결이 다르다.
+     이쪽은 여건이 반반이라 답이 흔들리는 획이라, 두 괘 사이에 놓인 셈이 된다. */
+  var wob = [0,1,2,3,4,5].filter(function(k){ return soft[k]; });
+  var wobHtml = '';
+  if(wob.length){
+    wobHtml =
+    '<div class="card" style="border:1.5px dashed var(--gold)">'+
+      '<div class="sec-label">흔 들 리 는  획 &nbsp;·&nbsp; 긴가민가</div>'+
+      '<p style="margin:0 0 14px;font-size:14px;color:var(--mute);line-height:1.7">'+
+        '여건이 반반이라 표시하신 자리입니다. <b>⑤之卦가 내가 손대서 바꾸는 획</b>이라면, '+
+        '여기는 <b>답이 흔들려서 판이 달라지는 획</b>이에요. '+
+        '지금 판과 아래 판 사이 어디쯤에 놓여 있다고 읽으시면 됩니다.</p>'+
+      wob.slice(0,3).map(function(k){
+        var fy=y.slice(); fy[k]=y[k]?0:1; var fb=bin(fy);
+        var qy=QS()[k<3?'L':'U'][k%3].y;
+        return '<div class="guarow" style="margin-bottom:14px">'+guaSVG(toY(fb),k)+'<div>'+
+          '<div class="num">'+qy+'</div>'+
+          '<h3 style="margin:3px 0 0;font-size:18px;color:var(--navy)">'+labelFull(fb)+'</h3>'+
+          '<p style="margin:5px 0 0;font-size:13.5px;color:var(--mute);line-height:1.7">'+
+            '이 획이 반대였다면 판은 <b>'+BYBIN[fb].ko+'</b>입니다.'+
+            (fb===jb?' — ⑤의 之卦와 같은 자리예요. 손댈 지점과 흔들리는 지점이 겹칩니다.':'')+
+            (fb===b?'':'')+
+          '</p></div></div>';
+      }).join('')+
+      (wob.length>3
+        ? '<p style="margin:0;font-size:13.5px;color:var(--mute);line-height:1.7">'+
+          '긴가민가가 '+wob.length+'개입니다. 넷 이상이면 괘가 사실상 안 정해져요 — '+
+          '물음을 더 좁게 잡고 다시 스캔하시는 편이 낫습니다. 위에는 앞의 셋만 폈습니다.</p>'
+        : '')+
+    '</div>';
+  }
 
   var R=document.getElementById('result');
   R.innerHTML =
@@ -636,6 +685,7 @@ function run(){
       '<li><b>도달점:</b> '+BYBIN[jb].ko+' — '+UPPER[upper3(jb)].t+' / '+LOWER[lower3(jb)].t+'</li>'+
     '</ul></div>'+
 
+  wobHtml+
   '<div class="grid2">'+
     '<div class="card"><div class="sec-label">⑥ 다 음  국 면 · 序卦</div>'+
       '<h3 style="margin:0;font-size:17px;color:var(--navy)">'+labelFull(nx.b)+'</h3>'+
