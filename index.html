@@ -84,6 +84,13 @@ header.top .sub{margin:0;color:var(--mute);font-size:13px}
 .recap .rv .yin{color:#4b5563}
 .copybtn{font-size:13px;padding:9px 16px;border-radius:999px;border:1.5px solid var(--navy);
   background:#fff;color:var(--navy);cursor:pointer;font-family:inherit;font-weight:700}
+/* 견주기 — 두 스캔을 나란히. 한 괘로 A·B를 답하는 장치가 역에 없으므로 두 판으로 놓는다 */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.cmp{grid-template-columns:1fr}}
+.cmp .card{margin:0}
+.cmpside{font-size:11px;letter-spacing:.16em;font-weight:700;color:var(--gold)}
+.minibtn{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;color:var(--mute);cursor:pointer;font-family:inherit}
 /* 序卦 사슬 — 앞뒤가 한 줄에 놓여야 어디서 와서 어디로 가는지가 보인다 */
 .chain{display:flex;gap:9px;align-items:baseline;margin:0 0 9px;font-size:15px;color:var(--navy)}
 .chain .ck{flex:none;width:30px;font-size:11px;letter-spacing:.08em;color:var(--mute);font-weight:700}
@@ -226,8 +233,14 @@ ul.acts li{margin:5px 0;font-size:14px}
   <div class="card hero">
     <div class="sec-label">S I T U A T I O N</div>
     <input class="title" id="title" placeholder="어떤 상황인가요? (예: 사업 시작 시기 결정)">
-    <p style="font-size:13px;color:var(--mute);margin:10px 0 0">
-      한 줄로 적어두면 나중에 다시 스캔할 때 궤적이 이어집니다.</p>
+    <p style="font-size:13px;color:var(--mute);margin:10px 0 0;line-height:1.7">
+      한 줄로 적어두면 나중에 다시 스캔할 때 궤적이 이어집니다.<br>
+      <b>둘 중 하나를 고르는 중</b>이라면 한쪽을 먼저 스캔한 뒤, 리포트 아래에서 견주기를 누르세요.</p>
+  </div>
+
+  <div class="card hidden" id="cmpCard" style="border:1.5px solid var(--gold)">
+    <div class="sec-label">견 주 기</div>
+    <div id="cmpInfo"></div>
   </div>
 
   <div class="card hidden" id="pastCard">
@@ -698,6 +711,13 @@ function run(fromLink){
       (stageSoft?' <span style="color:var(--gold);font-weight:700">· 둘 사이</span>':'')+
     '</div></div></div></div>';
 
+  /* 견주기 버튼 — 잡아둔 쪽이 있으면 합치고, 없으면 이쪽을 잡아둔다 */
+  var _pend=localStorage.getItem('ocst_cmp');
+  var _mine=sideStr();
+  var cmpBtnHtml = (_pend && _pend!==_mine)
+    ? '<button class="copybtn" id="cmpGo" style="border-color:var(--gold);color:var(--gold)">견주기</button>'
+    : '<button class="copybtn" id="cmpSet">다른 쪽으로도 스캔해 견주기</button>';
+
   var R=document.getElementById('result');
   R.innerHTML =
   '<div class="card hero">'+
@@ -801,7 +821,7 @@ function run(fromLink){
    '그 구조가 통상 어디로 풀리는지를 읽습니다. 조건이 바뀌면 다시 스캔해서 괘가 어디로 옮겨갔는지 보세요.</div>'+
 
   '<p style="text-align:center;margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
-    '<button class="copybtn" id="copyLink">링크 복사</button>'+
+    '<button class="copybtn" id="copyLink">링크 복사</button>'+ cmpBtnHtml +
     '<button class="backbtn" onclick="location.href=location.pathname+location.search">← 다시 스캔</button></p>';
 
   saveTrace(title,h,i,!fromLink);
@@ -812,6 +832,16 @@ function run(fromLink){
     var ok=function(){ cb.textContent='복사됐습니다'; };
     if(navigator.clipboard) navigator.clipboard.writeText(u).then(ok,function(){ prompt('이 주소를 복사하세요', u); });
     else prompt('이 주소를 복사하세요', u);
+  };
+  var cSet=document.getElementById('cmpSet');
+  if(cSet) cSet.onclick=function(){
+    localStorage.setItem('ocst_cmp', _mine);
+    location.href=location.pathname+location.search;   // 1단계로 — 배너가 뜬다
+  };
+  var cGo=document.getElementById('cmpGo');
+  if(cGo) cGo.onclick=function(){
+    var A=parseSide(_pend), B=parseSide(_mine);
+    if(A && B){ localStorage.removeItem('ocst_cmp'); renderCompare(A,B); }
   };
   document.getElementById('step1').classList.add('hidden');
   document.getElementById('step2').classList.add('hidden');
@@ -841,25 +871,152 @@ function saveTrace(title,h,i,push){
    이 앱의 근거는 "같은 입력 = 같은 괘"라는 재현성인데, 그 재현이 이 브라우저 안에
    갇혀 있었다. 상태를 통째로 해시에 실으면 서버 없이도 링크가 결과가 된다.
    형식: #1|카드키|답6|국면|긴가민가6|국면애매|제목 */
-function hashOf(){
-  return '#1|'+cardKey+'|'+ans.map(function(v){return v?1:0}).join('')+'|'+stage+'|'+
+function sideStr(){
+  return cardKey+'|'+ans.map(function(v){return v?1:0}).join('')+'|'+stage+'|'+
     soft.map(function(v){return v?1:0}).join('')+'|'+(stageSoft?1:0)+'|'+
     encodeURIComponent((document.getElementById('title').value||'').trim());
 }
+function hashOf(){ return '#1|'+sideStr(); }
+function cmpHashOf(a,b){ return '#2;'+a+';'+b; }   // ';'는 encodeURIComponent가 escape하므로 제목과 안 부딪힘
+
+function parseSide(str){
+  var m=String(str||'').split('|');
+  if(m.length<5) return null;
+  if(!QSETS.cards.some(function(c){return c.k===m[0];})) return null;
+  if(!/^[01]{6}$/.test(m[1]) || !/^[0-5]$/.test(m[2]) || !/^[01]{6}$/.test(m[3])) return null;
+  var t=''; try{ t=m[5]?decodeURIComponent(m[5]):''; }catch(e){ t=''; }
+  return {k:m[0], a:m[1].split('').map(Number), s:+m[2],
+          w:m[3].split('').map(function(c){return c==='1';}), g:m[4]==='1', t:t};
+}
 function readHash(){
-  var m=(location.hash||'').replace(/^#/,'').split('|');
-  if(m.length<6 || m[0]!=='1') return null;
-  if(!QSETS.cards.some(function(c){return c.k===m[1];})) return null;
-  if(!/^[01]{6}$/.test(m[2]) || !/^[0-5]$/.test(m[3]) || !/^[01]{6}$/.test(m[4])) return null;
-  var t=''; try{ t=m[6]?decodeURIComponent(m[6]):''; }catch(e){ t=''; }
-  return {k:m[1], a:m[2].split('').map(Number), s:+m[3],
-          w:m[4].split('').map(function(c){return c==='1';}), g:m[5]==='1', t:t};
+  var raw=(location.hash||'').replace(/^#/,'');
+  if(raw.charAt(0)==='2'){
+    var p=raw.split(';'), A=parseSide(p[1]), B=parseSide(p[2]);
+    return (A&&B) ? {cmp:true,A:A,B:B} : null;
+  }
+  if(raw.slice(0,2)==='1|'){
+    var st=parseSide(raw.slice(2));
+    return st ? {cmp:false,st:st} : null;
+  }
+  return null;
 }
 function applyHash(){
-  var st=readHash(); if(!st) return false;
+  var r=readHash(); if(!r) return false;
+  if(r.cmp){ renderCompare(r.A,r.B); return true; }
+  var st=r.st;
   cardKey=st.k; ans=st.a; stage=st.s; soft=st.w; stageSoft=st.g;
   document.getElementById('title').value=st.t;
   run(true); return true;      // 링크로 연 것은 궤적에 새로 쌓지 않는다
+}
+
+/* ══════════════ 견주기 ══════════════
+   역에는 "둘 중 뭐가 나은가"를 한 괘로 답하는 장치가 없다. 역은 한 판에 한 괘고,
+   두 선택지는 두 판이다. 그래서 축을 건드려 A/B를 陰陽에 싣는 대신
+   (그러면 乾=A압승인데 라벨은 "밀어붙이는 판"이 되어 8괘 물상·384효 판정이 통째로 헛돈다)
+   두 번 스캔한 것을 나란히 놓는다. 두 괘 다 판정·효사·궁리노트가 살아 있다. */
+function cardOf(k){ return QSETS.cards.filter(function(c){return c.k===k;})[0] || QSETS.cards[0]; }
+function derive(st){
+  var y=st.a.slice(), b=bin(y), h=BYBIN[b], i=st.s;
+  var card=cardOf(st.k), qs=QSETS.sets[card.set];
+  var J=judge(y,i);
+  var yao=YAO[h.n]?YAO[h.n][i]:null;
+  var vKey=yao?verdictFromYao(yao[2]):null;
+  return {st:st, y:y, b:b, h:h, i:i, card:card, qs:qs, yao:yao,
+          V:(vKey?VERDICT[vKey]:{n:J.label,c:J.cls}), jb:jiGua(y,i)};
+}
+/* 두 괘가 이미 맺고 있는 관계 — 錯이면 정말 다른 두 길이고, 綜이면 실은 한 사안의 앞뒤다 */
+function relOf(a,b){
+  if(a===b) return '두 스캔이 <b>같은 괘</b>로 떨어졌습니다 — 어느 쪽으로 가든 판의 구조가 같다는 뜻이에요. 갈림은 괘 밖에 있습니다.';
+  if(chakGua(toY(a))===b) return '두 괘가 <b>錯卦</b> 관계입니다 — 여섯 자리가 모두 반대라, 정말로 성질이 다른 두 길이에요.';
+  if(jongGua(toY(a))===b) return '두 괘가 <b>綜卦</b> 관계입니다 — 같은 판을 뒤집어 본 그림이라, 두 선택지가 실은 한 사안의 앞뒤일 수 있어요.';
+  if(hoGua(toY(a))===b) return '뒤쪽이 앞쪽의 <b>互卦</b>입니다 — B가 A의 속사정이라는 뜻이에요.';
+  if(hoGua(toY(b))===a) return '앞쪽이 뒤쪽의 <b>互卦</b>입니다 — A가 B의 속사정이라는 뜻이에요.';
+  if(Math.abs(BYBIN[a].n-BYBIN[b].n)===1) return '두 괘가 <b>序卦</b>에서 이웃입니다 — 하나가 다른 하나의 다음 마디예요.';
+  return '';
+}
+function renderCompare(sa,sb){
+  var A=derive(sa), B=derive(sb);
+  function side(D,tag){
+    var ls=(D.qs.stages||[])[D.i]||'';
+    return '<div class="card">'+
+      '<div class="cmpside">'+tag+'</div>'+
+      '<h3 style="margin:4px 0 0;font-size:15px;color:var(--mute);font-weight:600">'+
+        esc(D.st.t||D.card.name)+'</h3>'+
+      '<div class="guarow" style="margin-top:12px">'+guaSVG(toY(D.b),D.i)+'<div>'+
+        '<h3 style="margin:0;font-size:19px;color:var(--navy)">'+labelFull(D.b)+'</h3>'+
+        '<div style="margin-top:9px"><span class="verdict '+D.V.c+'">'+D.V.n+'</span></div>'+
+      '</div></div>'+
+      '<p style="margin:12px 0 0;font-size:13px;color:var(--mute);line-height:1.7">'+
+        '<b>'+POSGRAM[D.i].n+'爻 · '+STAGES[D.i].n+'</b>'+(ls?' — '+ls:'')+'</p>'+
+      (D.yao?'<div class="yaotext" style="margin:10px 0 0">'+D.yao[0]+
+             '<span class="tr">'+D.yao[1]+'</span></div>':'')+
+      '<ul class="acts" style="margin-top:12px">'+
+        '<li><b>손댈 지점:</b> '+D.qs.lever[D.i]+'</li>'+
+        '<li><b>도달점:</b> '+BYBIN[D.jb].ko+'</li></ul>'+
+    '</div>';
+  }
+  var same=A.V.n===B.V.n, rel=relOf(A.b,B.b);
+  var R=document.getElementById('result');
+  R.innerHTML =
+  '<div class="card hero"><div class="sec-label">견 주 기</div>'+
+    '<p style="margin:8px 0 0;font-size:15px;line-height:1.8">'+
+      '두 스캔을 나란히 놓았습니다. <b>어느 쪽이 낫다고 답한 화면이 아니에요</b> — '+
+      '역은 한 판에 한 괘라, 두 선택지는 두 판입니다. 고르는 것은 읽는 분 몫이고, '+
+      '여기서 볼 것은 <b>각 길이 어떤 판이고 무엇을 손대야 하는가</b>입니다.</p></div>'+
+  '<div class="cmp">'+side(A,'A')+side(B,'B')+'</div>'+
+  '<div class="card" style="border:1.5px solid var(--gold);margin-top:12px">'+
+    '<div class="sec-label">갈 리 는  지 점</div>'+
+    '<p style="margin:0 0 10px;font-size:14.5px;line-height:1.8">'+
+      (same
+        ? '판정이 <b>둘 다 '+A.V.n+'</b>입니다 — 길흉만으로는 안 갈립니다. 아래 손댈 지점을 견주세요.'
+        : 'A는 <b>'+A.V.n+'</b>, B는 <b>'+B.V.n+'</b>으로 갈립니다. 다만 이것은 그 국면의 효사가 그렇다는 것이지, 선택의 우열이 아닙니다.')+
+    '</p>'+
+    '<ul class="acts">'+
+      '<li><b>A로 가면:</b> '+A.qs.lever[A.i]+' — 도달점 '+BYBIN[A.jb].ko+'</li>'+
+      '<li><b>B로 가면:</b> '+B.qs.lever[B.i]+' — 도달점 '+BYBIN[B.jb].ko+'</li>'+
+    '</ul>'+
+    (rel?'<p style="margin:12px 0 0;font-size:14px;line-height:1.8;color:var(--ink)">'+rel+'</p>':'')+
+  '</div>'+
+  '<div class="note">두 판을 견줄 때 판정 글자보다 <b>손댈 지점</b>이 값납니다. '+
+   '어느 쪽이 좋으냐가 아니라, 그 길로 갔을 때 내가 실제로 손댈 것이 무엇이고 감당이 되느냐가 고를 근거예요.</div>'+
+  '<p style="text-align:center;margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
+    '<button class="copybtn" id="copyCmp">링크 복사</button>'+
+    '<button class="backbtn" onclick="location.href=location.pathname+location.search">← 처음으로</button></p>';
+
+  var hash=cmpHashOf(sideOf(sa), sideOf(sb));
+  try{ history.replaceState(null,'',hash); }catch(e){}
+  var cb=document.getElementById('copyCmp');
+  cb.onclick=function(){
+    var u=location.origin+location.pathname+hash;
+    if(navigator.clipboard) navigator.clipboard.writeText(u).then(
+      function(){ cb.textContent='복사됐습니다'; }, function(){ prompt('이 주소를 복사하세요', u); });
+    else prompt('이 주소를 복사하세요', u);
+  };
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.add('hidden');
+  R.classList.remove('hidden');
+  scrollTo(0,0);
+}
+/* 상태 객체를 다시 문자열로 — 링크로 들어온 견주기도 제 링크를 만들 수 있어야 한다 */
+function sideOf(st){
+  return st.k+'|'+st.a.map(function(v){return v?1:0}).join('')+'|'+st.s+'|'+
+    st.w.map(function(v){return v?1:0}).join('')+'|'+(st.g?1:0)+'|'+encodeURIComponent(st.t||'');
+}
+/* 1단계 배너 — 한쪽을 잡아뒀다는 것을 알려준다 */
+function renderPending(){
+  var box=document.getElementById('cmpCard');
+  var st=parseSide(localStorage.getItem('ocst_cmp'));
+  if(!st){ box.classList.add('hidden'); return; }
+  var hx=BYBIN[bin(st.a)];
+  document.getElementById('cmpInfo').innerHTML =
+    '<p style="margin:0 0 11px;font-size:14px;line-height:1.8">'+
+      '한쪽을 <b>'+esc(st.t||cardOf(st.k).name)+'</b> — <b>'+hx.ko+'</b>로 잡아뒀습니다. '+
+      '이제 <b>다른 쪽</b>을 스캔하시면 리포트 아래에 견주기 버튼이 뜹니다.</p>'+
+    '<button class="minibtn" id="cmpCancel">잡아둔 것 놓기</button>';
+  box.classList.remove('hidden');
+  document.getElementById('cmpCancel').onclick=function(){
+    localStorage.removeItem('ocst_cmp'); renderPending();
+  };
 }
 
 /* ══════════════ 지난 스캔 ══════════════
@@ -895,6 +1052,7 @@ document.getElementById('pastList').addEventListener('click',function(e){
 });
 
 renderPast();
+renderPending();
 applyHash();
 </script>
 </body>
