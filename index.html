@@ -64,6 +64,31 @@ header.top .sub{margin:0;color:var(--mute);font-size:13px}
 .softbtn:hover{border-color:var(--gold);color:var(--gold)}
 .softbtn.on{border-style:solid;border-color:var(--gold);background:#fdf8e8;
   color:var(--gold);font-weight:700}
+/* 지난 스캔 — localStorage에 쌓인 것을 꺼내는 문 */
+.past{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);
+  font-size:13.5px;flex-wrap:wrap}
+.past:last-child{border-bottom:none}
+.past .pt{font-weight:700;color:var(--navy)}
+.past .pm{color:var(--mute);font-size:12.5px;flex:1;min-width:120px}
+.past button{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;color:var(--navy);cursor:pointer;font-family:inherit}
+.past button.del{color:var(--mute)}
+.past button:hover{border-color:var(--navy)}
+/* 되보이기 — 어느 문항에 뭐라 답했는지 */
+.recap{font-size:13.5px}
+.recap .r{display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);line-height:1.6}
+.recap .r:last-child{border-bottom:none}
+.recap .rk{flex:none;width:104px;color:var(--mute);font-size:12.5px}
+.recap .rv{flex:1}
+.recap .rv b{color:var(--navy)}
+.recap .rv .yin{color:#4b5563}
+.copybtn{font-size:13px;padding:9px 16px;border-radius:999px;border:1.5px solid var(--navy);
+  background:#fff;color:var(--navy);cursor:pointer;font-family:inherit;font-weight:700}
+/* 序卦 사슬 — 앞뒤가 한 줄에 놓여야 어디서 와서 어디로 가는지가 보인다 */
+.chain{display:flex;gap:9px;align-items:baseline;margin:0 0 9px;font-size:15px;color:var(--navy)}
+.chain .ck{flex:none;width:30px;font-size:11px;letter-spacing:.08em;color:var(--mute);font-weight:700}
+.chain.now{opacity:.55}
+.chain .glabel{margin-top:1px}
 .opts button{flex:1;min-width:180px;padding:11px 12px;border-radius:12px;border:1.5px solid var(--line);
   background:#fff;font-size:14px;cursor:pointer;font-family:inherit;transition:.15s}
 .opts button:hover{border-color:var(--navy)}
@@ -203,6 +228,11 @@ ul.acts li{margin:5px 0;font-size:14px}
     <input class="title" id="title" placeholder="어떤 상황인가요? (예: 사업 시작 시기 결정)">
     <p style="font-size:13px;color:var(--mute);margin:10px 0 0">
       한 줄로 적어두면 나중에 다시 스캔할 때 궤적이 이어집니다.</p>
+  </div>
+
+  <div class="card hidden" id="pastCard">
+    <div class="sec-label">지 난  스 캔</div>
+    <div id="pastList"></div>
   </div>
 
   <div class="card">
@@ -573,12 +603,13 @@ function check(){
 }
 document.getElementById('go').onclick = function(){ run(); };
 
-function run(){
+function run(fromLink){
   var y=ans.slice(), b=bin(y), h=BYBIN[b], i=stage;
   var up=upper3(b), lo=lower3(b);
   var J=judge(y,i);
   var jb=jiGua(y,i), zb=jongGua(y), cb=chakGua(y), hb=hoGua(y);
   var nx=BYNUM[h.n===64?1:h.n+1];
+  var pv=BYNUM[h.n===1?64:h.n-1];      // 序卦는 앞뒤 사슬인데 그동안 뒤만 봤다
   var yao   = YAO[h.n] ? YAO[h.n][i] : null;          // [효사원문, 직역, 판정어]
   var vKey  = yao ? verdictFromYao(yao[2]) : null;    // 효사에 점사어가 있으면 그쪽이 우선
   var V     = vKey ? VERDICT[vKey] : {n:J.label, c:J.cls};
@@ -650,6 +681,22 @@ function run(){
       }).join('')+
     '</div>';
   }
+
+  /* 되보이기 — 괘 그림에 음양은 남지만 어느 문항에 뭐라 답했는지는 사라진다.
+     나중에 다시 열거나 재스캔해서 견주려면 이 대응이 남아 있어야 한다. */
+  var _qs=QS(), _qall=_qs.L.concat(_qs.U);
+  var recapHtml =
+  '<div class="card"><div class="sec-label">내 가  이 렇 게  답 했 습 니 다</div><div class="recap">'+
+    _qall.map(function(q,k){
+      return '<div class="r"><div class="rk">'+q.y.replace(' · ','<br>')+'</div><div class="rv">'+q.t+'<br>'+
+        (y[k]?'<b>'+q.a+'</b>':'<b class="yin">'+q.b+'</b>')+
+        (soft[k]?' <span style="color:var(--gold);font-weight:700">· 긴가민가</span>':'')+
+        '</div></div>';
+    }).join('')+
+    '<div class="r"><div class="rk">국면</div><div class="rv"><b>'+POSGRAM[i].n+'爻 · '+STAGES[i].n+'</b>'+
+      ((_qs.stages||[])[i]?' — '+_qs.stages[i]:'')+
+      (stageSoft?' <span style="color:var(--gold);font-weight:700">· 둘 사이</span>':'')+
+    '</div></div></div></div>';
 
   var R=document.getElementById('result');
   R.innerHTML =
@@ -736,37 +783,119 @@ function run(){
 
   wobHtml+
   '<div class="grid2">'+
-    '<div class="card"><div class="sec-label">⑥ 다 음  국 면 · 序卦</div>'+
-      '<h3 style="margin:0;font-size:17px;color:var(--navy)">'+labelFull(nx.b)+'</h3>'+
-      '<p class="why">序卦傳이 놓은 다음 마디입니다.</p></div>'+
+    '<div class="card"><div class="sec-label">⑥ 序 卦 의  사 슬</div>'+
+      '<p class="chain"><span class="ck">앞</span><span>'+labelFull(pv.b)+'</span></p>'+
+      '<p class="chain now"><span class="ck">지금</span><span>'+label(b)+'</span></p>'+
+      '<p class="chain"><span class="ck">뒤</span><span>'+labelFull(nx.b)+'</span></p>'+
+      '<p style="margin:10px 0 0;font-size:13px;color:var(--mute);line-height:1.7">'+
+      '序卦傳이 놓은 앞뒤 마디입니다. <b>앞</b>은 이 판이 대개 어디서 오는지, '+
+      '<b>뒤</b>는 어디로 넘어가는지예요. 다른 다섯 면이 앞일을 볼 때 앞 마디만 원인 쪽을 짚습니다.</p></div>'+
     '<div class="card"><div class="sec-label">뒤 집 힌  판 · 錯卦</div>'+
       '<h3 style="margin:0;font-size:17px;color:var(--navy)">'+labelFull(cb)+'</h3>'+
       '<p class="why">모든 조건이 정반대였을 때. 리스크 점검용입니다.</p></div></div>'+
 
+  recapHtml+
   '<div class="card"><div class="sec-label">궤 적</div><div class="hist" id="hist"></div></div>'+
 
   '<div class="note">이 도구는 앞일을 맞히지 않습니다. 지금 답하신 여섯 가지가 만드는 <b>구조</b>와, '+
    '그 구조가 통상 어디로 풀리는지를 읽습니다. 조건이 바뀌면 다시 스캔해서 괘가 어디로 옮겨갔는지 보세요.</div>'+
 
-  '<p style="text-align:center;margin-top:20px"><button class="backbtn" onclick="location.reload()">← 다시 스캔</button></p>';
+  '<p style="text-align:center;margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
+    '<button class="copybtn" id="copyLink">링크 복사</button>'+
+    '<button class="backbtn" onclick="location.href=location.pathname+location.search">← 다시 스캔</button></p>';
 
-  saveTrace(title,h,i);
+  saveTrace(title,h,i,!fromLink);
+  try{ history.replaceState(null,'',hashOf()); }catch(e){}
+  var cb=document.getElementById('copyLink');
+  if(cb) cb.onclick=function(){
+    var u=location.origin+location.pathname+hashOf();
+    var ok=function(){ cb.textContent='복사됐습니다'; };
+    if(navigator.clipboard) navigator.clipboard.writeText(u).then(ok,function(){ prompt('이 주소를 복사하세요', u); });
+    else prompt('이 주소를 복사하세요', u);
+  };
+  document.getElementById('step1').classList.add('hidden');
   document.getElementById('step2').classList.add('hidden');
   R.classList.remove('hidden');
   scrollTo(0,0);
 }
 
-function saveTrace(title,h,i){
+/* 제목은 사용자 입력이고 이제 링크를 타고 남에게 건너간다 — 반드시 이스케이프한다. */
+function esc(t){ return String(t).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+function saveTrace(title,h,i,push){
   var k='ocst_trace';
   var all=JSON.parse(localStorage.getItem(k)||'{}');
   var arr=all[title]||[];
-  arr.push({n:h.n,ko:h.ko,i:i,d:new Date().toISOString().slice(0,10)});
-  all[title]=arr; localStorage.setItem(k,JSON.stringify(all));
+  if(push){
+    arr.push({n:h.n,ko:h.ko,i:i,d:new Date().toISOString().slice(0,10),h:hashOf()});
+    all[title]=arr; localStorage.setItem(k,JSON.stringify(all));
+  }
   document.getElementById('hist').innerHTML = arr.length<2
-    ? '<b>'+title+'</b> — 첫 스캔입니다. 상황이 움직인 뒤 다시 스캔하면 괘의 이동 경로가 여기 쌓입니다.'
-    : '<b>'+title+'</b><br>'+arr.map(function(r){
+    ? '<b>'+esc(title)+'</b> — 첫 스캔입니다. 상황이 움직인 뒤 다시 스캔하면 괘의 이동 경로가 여기 쌓입니다.'
+    : '<b>'+esc(title)+'</b><br>'+arr.map(function(r){
         return r.d+' · '+r.ko+'('+STAGES[r.i].n+')'; }).join(' &nbsp;→&nbsp; ');
 }
+
+/* ══════════════ 결과 링크 ══════════════
+   이 앱의 근거는 "같은 입력 = 같은 괘"라는 재현성인데, 그 재현이 이 브라우저 안에
+   갇혀 있었다. 상태를 통째로 해시에 실으면 서버 없이도 링크가 결과가 된다.
+   형식: #1|카드키|답6|국면|긴가민가6|국면애매|제목 */
+function hashOf(){
+  return '#1|'+cardKey+'|'+ans.map(function(v){return v?1:0}).join('')+'|'+stage+'|'+
+    soft.map(function(v){return v?1:0}).join('')+'|'+(stageSoft?1:0)+'|'+
+    encodeURIComponent((document.getElementById('title').value||'').trim());
+}
+function readHash(){
+  var m=(location.hash||'').replace(/^#/,'').split('|');
+  if(m.length<6 || m[0]!=='1') return null;
+  if(!QSETS.cards.some(function(c){return c.k===m[1];})) return null;
+  if(!/^[01]{6}$/.test(m[2]) || !/^[0-5]$/.test(m[3]) || !/^[01]{6}$/.test(m[4])) return null;
+  var t=''; try{ t=m[6]?decodeURIComponent(m[6]):''; }catch(e){ t=''; }
+  return {k:m[1], a:m[2].split('').map(Number), s:+m[3],
+          w:m[4].split('').map(function(c){return c==='1';}), g:m[5]==='1', t:t};
+}
+function applyHash(){
+  var st=readHash(); if(!st) return false;
+  cardKey=st.k; ans=st.a; stage=st.s; soft=st.w; stageSoft=st.g;
+  document.getElementById('title').value=st.t;
+  run(true); return true;      // 링크로 연 것은 궤적에 새로 쌓지 않는다
+}
+
+/* ══════════════ 지난 스캔 ══════════════
+   궤적은 쌓이고 있었는데 꺼낼 문이 없었다. 1단계에서 열고 지운다. */
+function renderPast(){
+  var all=JSON.parse(localStorage.getItem('ocst_trace')||'{}');
+  var keys=Object.keys(all).filter(function(t){ return all[t] && all[t].length; });
+  keys.sort(function(a,b){
+    return (all[b][all[b].length-1].d||'').localeCompare(all[a][all[a].length-1].d||''); });
+  var box=document.getElementById('pastCard');
+  if(!keys.length){ box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  document.getElementById('pastList').innerHTML = keys.slice(0,8).map(function(t){
+    var arr=all[t], last=arr[arr.length-1];
+    return '<div class="past"><span class="pt">'+esc(t)+'</span>'+
+      '<span class="pm">'+last.d+' · '+last.ko+(arr.length>1?' · '+arr.length+'회':'')+'</span>'+
+      (last.h?'<button data-open="'+encodeURIComponent(t)+'">열기</button>':'')+
+      '<button class="del" data-del="'+encodeURIComponent(t)+'">지우기</button></div>';
+  }).join('');
+}
+document.getElementById('pastList').addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  var all=JSON.parse(localStorage.getItem('ocst_trace')||'{}');
+  if(b.dataset.del){
+    delete all[decodeURIComponent(b.dataset.del)];
+    localStorage.setItem('ocst_trace',JSON.stringify(all)); renderPast(); return;
+  }
+  if(b.dataset.open){
+    var arr=all[decodeURIComponent(b.dataset.open)]||[];
+    var last=arr[arr.length-1];
+    if(last && last.h){ location.hash=last.h.replace(/^#/,''); applyHash(); }
+  }
+});
+
+renderPast();
+applyHash();
 </script>
 </body>
 </html>
