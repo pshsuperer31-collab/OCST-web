@@ -103,6 +103,19 @@ header.top .sub{margin:0;color:var(--mute);font-size:13px}
 .opts button.on[data-v="1"]{background:var(--navy);color:#fff;border-color:var(--navy)}
 .opts button.on[data-v="0"]{background:#4b5563;color:#fff;border-color:#4b5563}
 /* 1단계 — 상황 카드를 고르는 칸 */
+/* 상황 탭 — 43장을 한 화면에 펴 놓으니 첫 화면이 스크롤 압박이었다.
+   그룹을 탭으로 접고 한 번에 한 묶음만 편다. 추천이 있으면 그쪽이 기본 탭. */
+.tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
+.tabs button{font-size:13px;padding:7px 13px;border-radius:999px;border:1.5px solid var(--line);
+  background:#fff;color:var(--mute);cursor:pointer;font-family:inherit;font-weight:600;transition:.15s}
+.tabs button:hover{border-color:var(--navy);color:var(--navy)}
+.tabs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.tabs button.rec{border-color:var(--gold);color:var(--gold)}
+.tabs button.rec.on{background:var(--gold);border-color:var(--gold);color:#fff}
+.tabs button .dot{display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:var(--gold);margin-left:6px;vertical-align:2px}
+.tabs button.on .dot{background:#fff}
+
 .cardgrp{font-size:17px;letter-spacing:.02em;color:var(--gold);font-weight:700;
   margin:26px 0 11px;padding-left:2px}
 .cardgrp:first-child{margin-top:0}
@@ -517,32 +530,57 @@ function cardBtn(c, withGroup){
   return '<button data-k="'+c.k+'"'+(c.k===cardKey?' class="on"':'')+'>'+
     '<b>'+c.name+'</b><span>'+(withGroup?c.g+' · ':'')+c.desc+'</span></button>';
 }
-function renderCards(hits){
-  hits = hits || [];
-  var up = hits.map(function(c){ return c.k; }), html='';
-  if(hits.length){
-    html += '<div class="cardgrp match">적어주신 말과 가까운 것</div><div class="qset-grid">'+
-            hits.map(function(c){ return cardBtn(c, true); }).join('')+'</div>';
+var GROUPS = (function(){
+  var g=[]; QSETS.cards.forEach(function(c){ if(g.indexOf(c.g)<0) g.push(c.g); }); return g;
+})();
+var REC='__rec__';
+var activeGrp = GROUPS[0];
+var lastHits = [];
+
+function renderCards(hits, fromInput){
+  lastHits = hits || [];
+  /* 추천이 새로 나오면 그쪽으로 옮겨준다 — 상황 한 줄이 이 앱의 주 진입로다.
+     다만 옮겨주는 것은 입력이 바뀐 때뿐. 매 렌더마다 끌어당기면 탭을 못 벗어난다. */
+  if(fromInput && lastHits.length) activeGrp = REC;
+  if(!lastHits.length && activeGrp === REC) activeGrp = GROUPS[0];
+
+  var picked = cardKey ? (QSETS.cards.filter(function(c){return c.k===cardKey;})[0]||null) : null;
+  var tabs = '<div class="tabs">';
+  if(lastHits.length){
+    var recHas = picked && activeGrp!==REC && lastHits.some(function(c){return c.k===picked.k;});
+    tabs += '<button class="rec'+(activeGrp===REC?' on':'')+'" data-g="'+REC+'">◆ 추천'+
+            (recHas?'<span class="dot"></span>':'')+'</button>';
   }
-  var g=null;
-  QSETS.cards.forEach(function(c){
-    if(up.indexOf(c.k)>=0) return;
-    if(c.g!==g){ if(g!==null) html+='</div>'; html+='<div class="cardgrp">'+c.g+'</div><div class="qset-grid">'; g=c.g; }
-    html += cardBtn(c, false);
-  });
-  if(g!==null) html+='</div>';
-  document.getElementById('qSet').innerHTML = html;
+  tabs += GROUPS.map(function(g){
+    return '<button'+(activeGrp===g?' class="on"':'')+' data-g="'+g+'">'+g+
+      (picked && picked.g===g && activeGrp!==g ? '<span class="dot"></span>' : '')+'</button>';
+  }).join('')+'</div>';
+
+  var list = (activeGrp===REC ? lastHits
+                              : QSETS.cards.filter(function(c){ return c.g===activeGrp; }));
+  var body = '<div class="qset-grid">'+
+    list.map(function(c){ return cardBtn(c, activeGrp===REC); }).join('')+'</div>';
+
+  document.getElementById('qSet').innerHTML = tabs + body;
 }
 renderCards();
+document.getElementById('qSet').addEventListener('click',function(e){
+  var t=e.target.closest('.tabs button'); if(!t) return;
+  activeGrp=t.dataset.g; renderCards(lastHits);
+});
 
 function pickCard(k){
   cardKey=k;
-  document.querySelectorAll('#qSet button').forEach(function(b){
+  document.querySelectorAll('#qSet .qset-grid button').forEach(function(b){
     b.classList.toggle('on', b.dataset.k===k); });
-  document.getElementById('next').disabled=false;
+  var c=QSETS.cards.filter(function(x){return x.k===k;})[0];
+  var nx=document.getElementById('next');
+  nx.disabled=false;
+  nx.textContent = c ? '다음 · '+c.name : '다음';
+  renderCards(lastHits);              // 탭에 고른 표시(점)를 갱신
 }
 document.getElementById('qSet').addEventListener('click',function(e){
-  var btn=e.target.closest('button'); if(btn) pickCard(btn.dataset.k);
+  var btn=e.target.closest('.qset-grid button'); if(btn) pickCard(btn.dataset.k);
 });
 
 /* 상황 한 줄에서 카드를 추천한다.
@@ -556,7 +594,7 @@ function suggest(text){
     .sort(function(a,b){return b.n-a.n}).slice(0,3).map(function(x){return x.c});
 }
 document.getElementById('title').addEventListener('input',function(){
-  renderCards(suggest(this.value));
+  renderCards(suggest(this.value), true);
 });
 
 document.getElementById('next').onclick = function(){ toStep2(); };
