@@ -835,6 +835,34 @@ const KW = {
 };
 q.cards.forEach(c => { c.kw = KW[c.k] || []; });
 
+/* ── 영역 ──────────────────────────────────────────────
+   ★사람은 구체적 서사를 들고 오지, 그것을 줄인 동사("받을까")는 마지막에야 깨닫는다.
+   그래서 입구를 둘로 둔다 — 「상황으로」(영역)와 「물음으로」(원형).
+   같은 64장에 대한 서로 다른 두 색인이라, 한 목록 안에 축이 섞이는 것과는 다르다.
+   한 장이 여러 영역에 걸쳐도 된다(빚을 낼까 = 돈). */
+q.areas = ['일','돈','사람','몸과 마음','자리','배움','판'];
+const AREA = {
+  start:['일'], delay:['일'], invest:['돈','일'], again:['일'], waitmore:['일'],
+  treat:['몸과 마음'], borrow:['돈'],
+  learn:['배움'], master:['배움','사람'], deepen:['배움'],
+  push:['일'], nofruit:['일'], wall:['일'], scaleup:['일','돈'], oldmess:['일'], rework:['일'],
+  publish:['일'], announce:['일','사람'],
+  entrust:['일','사람'], hire:['일','돈'],
+  takelead:['일','판'], sortout:['일','판'], found:['판','사람'],
+  offer:['일','자리'], favor:['사람'], inherit:['일','사람'], lend:['돈','사람'],
+  joinin:['자리','판'], rightplace:['자리','판'], whenjoin:['자리','판'],
+  refuse:['사람'], distance:['사람'], lessrole:['일','자리'], cutoff:['사람'],
+  intrude:['일','자리'], unfair:['일','사람'], dispute:['돈','일'], rumor:['사람','판'],
+  mend:['사람'], credit:['일','사람'], comeback:['일','몸과 마음'],
+  habit:['몸과 마음'], quit:['몸과 마음'], temper:['몸과 마음','사람'], body:['몸과 마음'],
+  stop:['일'], sunk:['돈','일'], handover:['일','자리'], rest:['몸과 마음'], bodysign:['몸과 마음'],
+  endure:['자리'], move:['자리'],
+  relation:['사람'], conflict:['사람'], together:['사람','일'], confess:['사람'],
+  askhelp:['사람'], apologize:['사람'], family:['사람'], disagree:['사람','판'],
+  decay:['판'], speakup:['판'], unheard:['판'], keepon:['판','몸과 마음']
+};
+q.cards.forEach(c => { c.area = AREA[c.k] || []; });
+
 /* ── 검증 ────────────────────────────────────────────── */
 const bad = [];
 q.cards.forEach(c => {
@@ -868,6 +896,13 @@ q.cards.forEach(c => { (setg[c.set] = setg[c.set] || new Set()).add(c.g); });
 Object.keys(setg).forEach(k => {
   if (setg[k].size !== 1) bad.push(`원형 ${k}: 그룹 ${[...setg[k]].join('+')} 흩어짐`);
 });
+q.cards.forEach(c => {
+  if (!c.area || !c.area.length) bad.push(`${c.k}: 영역 없음`);
+  (c.area || []).forEach(x => { if (q.areas.indexOf(x) < 0) bad.push(`${c.k}: 모르는 영역 ${x}`); });
+});
+q.areas.forEach(x => {
+  if (!q.cards.some(c => (c.area || []).indexOf(x) >= 0)) bad.push(`영역 ${x}: 카드 없음`);
+});
 const keys = q.cards.map(c => c.k);
 if (keys.length !== new Set(keys).size) bad.push('카드 키 중복');
 if (bad.length) { console.error('✗', bad.join(' · ')); process.exit(1); }
@@ -881,3 +916,6 @@ q.cards.forEach(c => { used[c.set] = (used[c.set] || 0) + 1; });
 console.log(`카드 ${q.cards.length} · 원형 ${Object.keys(q.sets).length} · 결손 없음`);
 console.log('그룹', JSON.stringify(g));
 console.log('원형별 카드', JSON.stringify(used));
+const ac = {};
+q.areas.forEach(x => { ac[x] = q.cards.filter(c => c.area.indexOf(x) >= 0).length; });
+console.log('영역별 카드', JSON.stringify(ac));
