@@ -182,9 +182,14 @@ input.title{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-r
 /* 궁리등급 — 이 해석이 구조에서 얼마나 곧바로 나오는가 */
 .grade{font-size:10.5px;letter-spacing:.02em;padding:2px 8px;border-radius:999px;font-weight:700;
   cursor:help}
-.grade.g3{background:#e8f3ec;color:#1e6b40}
-.grade.g2{background:#fdf4e3;color:#8a6116}
-.grade.g1{background:#eef0f3;color:#5b6472}
+/* 셋을 같은 무게로 그리면 정보량과 어긋난다 — ★★★은 열에 여덟이라 조용해야 하고,
+   ★은 열에 하나도 안 되므로 도드라져야 한다. 등급은 안 흔들고 표시만 빈도의 역순으로. */
+.grade.g3{background:transparent;border:1px solid #cfe0d5;color:#6f8878;font-weight:600}
+.grade.g2{background:#fdf4e3;border:1px solid #e8cf9a;color:#8a6116}
+.grade.g1{background:#efeaf7;border:1.5px solid #a58fd0;color:#4a2f80;
+  font-size:11.5px;padding:3px 10px}
+/* 이 등급이 흔한지 드문지 — 기준선이 없으면 배지가 정보가 안 된다 */
+.grade .gn{font-weight:400;opacity:.75;margin-left:6px;letter-spacing:0}
 .gungli .gnote{display:block;margin-top:8px;padding-top:8px;border-top:1px dashed #e2d9be;
   font-size:12px;color:var(--mute);letter-spacing:0}
 /* 술어 풀이 — 원문은 그대로 두고 아래에서 뜻만 알려준다 */
@@ -475,6 +480,12 @@ function termsIn(text){
   return out.slice(0,5);
 }
 
+/* 384효를 실제로 세어 둔다 — 하드코딩하면 등급을 손볼 때마다 어긋난다 */
+const GRADE_N = (function(){
+  var c={1:0,2:0,3:0,total:0};
+  for(var k in NOTE) for(var j=0;j<NOTE[k].length;j++){ c[NOTE[k][j][1]]++; c.total++; }
+  return c;
+})();
 const GRADE = {
   3:{s:'★★★', n:'구조정합',  d:'이 판정은 괘의 구조에서 그대로 나옵니다.'},
   2:{s:'★★',  n:'보통',      d:'구조로 대체로 설명되나, 일부는 전해오는 해석에 기댑니다.'},
@@ -751,7 +762,8 @@ function run(fromLink){
         '효사가 길과 흉을 함께 말합니다 — 무엇을 어떻게 하느냐가 결과를 가릅니다.</p>' : '')+
     (note
       ? '<div class="gungli"><span class="ghead">왜 이렇게 읽나'+
-          (gr?'<b class="grade g'+nRow[1]+'" title="'+gr.d+'">'+gr.s+' '+gr.n+'</b>':'')+
+          (gr?'<b class="grade g'+nRow[1]+'" title="'+gr.d+'">'+gr.s+' '+gr.n+
+              '<span class="gn">'+GRADE_N.total+'효 중 '+GRADE_N[nRow[1]]+'</span></b>':'')+
         '</span>'+note+
         (gr?'<span class="gnote">'+gr.d+'</span>':'')+
         (function(){
