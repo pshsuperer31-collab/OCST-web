@@ -253,67 +253,76 @@ Object.keys(STAGE_LINES).forEach(k => { q.sets[k].stages = STAGE_LINES[k]; });
 
 /* ── 카드 ────────────────────────────────────────────── */
 
+/* ── 카드 ──────────────────────────────────────────────
+   ★그룹 = 원형 1:1. 이 앱의 뼈대가 "무엇을 묻느냐에 따라 여섯 문장이 갈린다"이므로
+   탭을 고르는 순간 물음의 종류가 정해지게 둔다. 예전엔 분류 축이 셋(행위·대상·출처)
+   섞여 있었고 두 그룹은 원형까지 뒤섞여 있었다.
+   이름은 "~할까" 물음꼴로 통일. 다만 people·public 둘은 행위가 아니라 맥락이라
+   물음꼴이 안 되므로 억지로 맞추지 않고 뒤에 따로 놓는다(sets[].ctx). */
 q.cards = [
-  {g:'시작 · 시기', k:'start',    set:'timing', name:'새로 시작할까 말까',      desc:'벌일지 말지 자체를 저울질하는 중'},
-  {g:'시작 · 시기', k:'delay',    set:'timing', name:'지금 할까, 더 준비할까',  desc:'하기는 할 건데 때가 걸리는 중'},
-  {g:'시작 · 시기', k:'invest',   set:'timing', name:'큰돈·시간을 들일까',      desc:'들어가면 되돌리기 어려운 일'},
-  {g:'시작 · 시기', k:'again',    set:'timing', name:'접었던 걸 다시 할까',     desc:'한번 놓았던 일을 다시 잡을지'},
-  {g:'시작 · 시기', k:'waitmore', set:'timing', name:'움직일까, 더 기다릴까',   desc:'때가 오기를 기다리는 중'},
-  {g:'시작 · 시기', k:'learn',    set:'timing', name:'배우러 갈까',            desc:'공부·자격을 시작할지 재는 중'},
+  {g:'언제 할까', k:'start',    set:'timing', name:'새로 시작할까 말까',     desc:'벌일지 말지 자체를 저울질하는 중'},
+  {g:'언제 할까', k:'delay',    set:'timing', name:'지금 할까, 더 준비할까', desc:'하기는 할 건데 때가 걸리는 중'},
+  {g:'언제 할까', k:'invest',   set:'timing', name:'큰돈·시간을 들일까',     desc:'들어가면 되돌리기 어려운 일'},
+  {g:'언제 할까', k:'again',    set:'timing', name:'접었던 걸 다시 할까',    desc:'한번 놓았던 일을 다시 잡을지'},
+  {g:'언제 할까', k:'waitmore', set:'timing', name:'움직일까, 더 기다릴까',  desc:'때가 오기를 기다리는 중'},
+  {g:'언제 할까', k:'learn',    set:'timing', name:'배우러 갈까',            desc:'공부·자격을 시작할지 재는 중'},
+  {g:'언제 할까', k:'treat',    set:'timing', name:'치료를 받을까',          desc:'손대야 하는 걸 미루고 있을 때'},
+  {g:'언제 할까', k:'borrow',   set:'timing', name:'빚을 낼까',              desc:'당겨 쓸지 재는 중'},
 
-  {g:'밀고 나가기', k:'push',    set:'push', name:'하던 일을 계속 밀까',     desc:'이어갈지 여기서 멈출지'},
-  {g:'밀고 나가기', k:'nofruit', set:'push', name:'오래 했는데 성과가 없다', desc:'공은 들였는데 밖에서 반응이 없을 때'},
-  {g:'밀고 나가기', k:'wall',    set:'push', name:'벽에 부딪혔다',           desc:'가던 길이 막혀 더 안 나갈 때'},
-  {g:'밀고 나가기', k:'scaleup', set:'push', name:'일을 키울까',             desc:'넓히거나 늘릴지 재는 중'},
-  {g:'밀고 나가기', k:'oldmess', set:'push', name:'묵은 문제를 손볼까',      desc:'미뤄둔 탈을 이제 손댈지'},
-  {g:'밀고 나가기', k:'rework',  set:'push', name:'방식을 바꿔볼까',         desc:'같은 일을 다른 길로 할지'},
+  {g:'계속할까', k:'push',    set:'push', name:'하던 일을 계속 밀까',     desc:'이어갈지 여기서 멈출지'},
+  {g:'계속할까', k:'nofruit', set:'push', name:'오래 했는데 성과가 없다', desc:'공은 들였는데 밖에서 반응이 없을 때'},
+  {g:'계속할까', k:'wall',    set:'push', name:'벽에 부딪혔다',           desc:'가던 길이 막혀 더 안 나갈 때'},
+  {g:'계속할까', k:'scaleup', set:'push', name:'일을 키울까',             desc:'넓히거나 늘릴지 재는 중'},
+  {g:'계속할까', k:'oldmess', set:'push', name:'묵은 문제를 손볼까',      desc:'미뤄둔 탈을 이제 손댈지'},
+  {g:'계속할까', k:'rework',  set:'push', name:'방식을 바꿔볼까',         desc:'같은 일을 다른 길로 할지'},
 
-  {g:'내놓기 · 알리기', k:'publish',  set:'reveal', name:'만든 걸 내놓을까', desc:'작품·제품·글을 세상에 낼지'},
-  {g:'내놓기 · 알리기', k:'announce', set:'reveal', name:'알릴까 덮을까',    desc:'소식을 밝힐지 묻어둘지'},
+  {g:'내놓을까', k:'publish',  set:'reveal', name:'만든 걸 내놓을까', desc:'작품·제품·글을 세상에 낼지'},
+  {g:'내놓을까', k:'announce', set:'reveal', name:'알릴까 덮을까',    desc:'소식을 밝힐지 묻어둘지'},
 
-  {g:'들어온 제안', k:'offer', set:'accept', name:'제안이 들어왔다', desc:'받을지 말지 재는 중'},
-  {g:'들어온 제안', k:'favor', set:'accept', name:'부탁을 받았다',   desc:'들어줄지 말지 재는 중'},
-  {g:'들어온 제안', k:'inherit', set:'accept', name:'물려받은 일을 떠맡을까', desc:'부모·선임이 남긴 것을 내가 질지'},
-  {g:'들어온 제안', k:'lend',    set:'accept', name:'빌려줄까',               desc:'돈이나 손을 내달라는 부탁'},
+  {g:'맡길까', k:'entrust', set:'delegate', name:'맡길까 직접 할까', desc:'내 손에 쥘지 남에게 넘길지'},
+  {g:'맡길까', k:'hire',    set:'delegate', name:'사람을 더 쓸까',   desc:'손을 늘릴지 재는 중'},
 
-  {g:'맡기기', k:'entrust', set:'delegate', name:'맡길까 직접 할까', desc:'내 손에 쥘지 남에게 넘길지'},
-  {g:'맡기기', k:'hire',    set:'delegate', name:'사람을 더 쓸까',   desc:'손을 늘릴지 재는 중'},
+  {g:'받을까', k:'offer',   set:'accept', name:'제안이 들어왔다',        desc:'받을지 말지 재는 중'},
+  {g:'받을까', k:'favor',   set:'accept', name:'부탁을 받았다',          desc:'들어줄지 말지 재는 중'},
+  {g:'받을까', k:'inherit', set:'accept', name:'물려받은 일을 떠맡을까', desc:'부모·선임이 남긴 것을 내가 질지'},
+  {g:'받을까', k:'lend',    set:'accept', name:'빌려줄까',              desc:'돈이나 손을 내달라는 부탁'},
 
-  {g:'멈춤 · 정리', k:'stop',     set:'stop', name:'하던 것을 멈출까',         desc:'새로 벌이려면 뭔가는 놓아야 할 때'},
-  {g:'멈춤 · 정리', k:'sunk',     set:'stop', name:'손해 보는데 못 놓고 있다', desc:'아까워서 계속 붓고 있는 것'},
-  {g:'멈춤 · 정리', k:'handover', set:'stop', name:'넘기거나 접을까',         desc:'남에게 맡기거나 아예 닫을지'},
-  {g:'멈춤 · 정리', k:'rest',     set:'stop', name:'쉴까',                     desc:'몸이나 마음이 바닥났을 때'},
+  {g:'맞설까', k:'intrude', set:'defend', name:'내 자리를 넘본다',   desc:'경쟁자나 후발이 들어왔을 때'},
+  {g:'맞설까', k:'unfair',  set:'defend', name:'부당한 걸 떠안았다', desc:'책임이나 요구가 억지로 넘어왔을 때'},
+  {g:'맞설까', k:'dispute', set:'defend', name:'따질까 넘길까',       desc:'값·조건·잘잘못을 두고 다투는 중'},
+  {g:'맞설까', k:'rumor',   set:'defend', name:'말이 돌고 있다',      desc:'오해나 소문에 대응할지'},
 
-  {g:'사람', k:'relation',  set:'people', name:'이 사람과 어떻게 될까', desc:'관계가 어디로 가고 있는지'},
-  {g:'사람', k:'conflict',  set:'people', name:'갈등이 생겼다',         desc:'틀어졌거나 부딪히는 중'},
-  {g:'사람', k:'together',  set:'people', name:'같이 할까 말까',        desc:'손잡을지 말지 재는 중'},
-  {g:'사람', k:'confess',   set:'people', name:'마음을 전할까',         desc:'말할지 덮을지 망설이는 중'},
-  {g:'사람', k:'askhelp',   set:'people', name:'도움을 청할까',         desc:'혼자 안 되는 걸 부탁할지'},
-  {g:'사람', k:'apologize', set:'people', name:'먼저 숙일까',           desc:'사과하거나 손 내밀지'},
-  {g:'사람', k:'family',    set:'people', name:'집안 일에 끼어들까',   desc:'부모·형제·자식 일에 손댈지'},
+  {g:'되돌릴까', k:'mend',     set:'repair', name:'틀어진 걸 되돌릴까',   desc:'사이가 상한 뒤 회복할지'},
+  {g:'되돌릴까', k:'credit',   set:'repair', name:'잃은 믿음을 되찾을까', desc:'밖에서 보는 내 값이 깎였을 때'},
+  {g:'되돌릴까', k:'comeback', set:'repair', name:'무너진 데서 다시 설까', desc:'크게 잃고 난 뒤 일어설지'},
 
-  {g:'거취', k:'endure', set:'stay', name:'여기서 버틸까', desc:'지금 자리를 지킬지'},
-  {g:'거취', k:'move',   set:'stay', name:'옮길까 남을까', desc:'갈 데를 두고 재는 중'},
+  {g:'놓을까', k:'stop',     set:'stop', name:'하던 것을 멈출까',         desc:'새로 벌이려면 뭔가는 놓아야 할 때'},
+  {g:'놓을까', k:'sunk',     set:'stop', name:'손해 보는데 못 놓고 있다', desc:'아까워서 계속 붓고 있는 것'},
+  {g:'놓을까', k:'handover', set:'stop', name:'넘기거나 접을까',         desc:'남에게 맡기거나 아예 닫을지'},
+  {g:'놓을까', k:'rest',     set:'stop', name:'쉴까',                     desc:'몸이나 마음이 바닥났을 때'},
+  {g:'놓을까', k:'bodysign', set:'stop', name:'몸이 신호를 보낸다',       desc:'무리인 줄 알면서 계속 가고 있을 때'},
 
-  {g:'지킴 · 맞섬', k:'intrude', set:'defend', name:'내 자리를 넘본다',       desc:'경쟁자나 후발이 들어왔을 때'},
-  {g:'지킴 · 맞섬', k:'unfair',  set:'defend', name:'부당한 걸 떠안았다',     desc:'책임이나 요구가 억지로 넘어왔을 때'},
-  {g:'지킴 · 맞섬', k:'dispute', set:'defend', name:'따질까 넘길까',           desc:'값·조건·잘잘못을 두고 다투는 중'},
-  {g:'지킴 · 맞섬', k:'rumor',   set:'defend', name:'말이 돌고 있다',         desc:'오해나 소문에 대응할지'},
+  {g:'남을까 갈까', k:'endure', set:'stay', name:'여기서 버틸까', desc:'지금 자리를 지킬지'},
+  {g:'남을까 갈까', k:'move',   set:'stay', name:'옮길까 남을까', desc:'갈 데를 두고 재는 중'},
 
-  {g:'되돌리기', k:'mend',     set:'repair', name:'틀어진 걸 되돌릴까',   desc:'사이가 상한 뒤 회복할지'},
-  {g:'되돌리기', k:'credit',   set:'repair', name:'잃은 믿음을 되찾을까', desc:'밖에서 보는 내 값이 깎였을 때'},
-  {g:'되돌리기', k:'comeback', set:'repair', name:'무너진 데서 다시 설까', desc:'크게 잃고 난 뒤 일어설지'},
+  {g:'이 사람과', k:'relation',  set:'people', name:'이 사람과 어떻게 될까', desc:'관계가 어디로 가고 있는지'},
+  {g:'이 사람과', k:'conflict',  set:'people', name:'갈등이 생겼다',         desc:'틀어졌거나 부딪히는 중'},
+  {g:'이 사람과', k:'together',  set:'people', name:'같이 할까 말까',        desc:'손잡을지 말지 재는 중'},
+  {g:'이 사람과', k:'confess',   set:'people', name:'마음을 전할까',         desc:'말할지 덮을지 망설이는 중'},
+  {g:'이 사람과', k:'askhelp',   set:'people', name:'도움을 청할까',         desc:'혼자 안 되는 걸 부탁할지'},
+  {g:'이 사람과', k:'apologize', set:'people', name:'먼저 숙일까',           desc:'사과하거나 손 내밀지'},
+  {g:'이 사람과', k:'family',    set:'people', name:'집안 일에 끼어들까',    desc:'부모·형제·자식 일에 손댈지'},
+  {g:'이 사람과', k:'disagree',  set:'people', name:'뜻이 갈려 부딪힌다',    desc:'가까운 사람과 견해가 갈릴 때'},
 
-  {g:'몸 · 살림', k:'bodysign', set:'stop',   name:'몸이 신호를 보낸다', desc:'무리인 줄 알면서 계속 가고 있을 때'},
-  {g:'몸 · 살림', k:'treat',    set:'timing', name:'치료를 받을까',      desc:'손대야 하는 걸 미루고 있을 때'},
-  {g:'몸 · 살림', k:'borrow',   set:'timing', name:'빚을 낼까',          desc:'당겨 쓸지 재는 중'},
-
-  {g:'속한 판', k:'decay',    set:'public', name:'속한 판이 나빠지고 있다', desc:'기우는 판을 보고 있을 때, 내가 어디에 설지'},
-  {g:'속한 판', k:'speakup',  set:'public', name:'목소리를 낼까',           desc:'나서서 말할지 묻어둘지'},
-  {g:'속한 판', k:'unheard',  set:'public', name:'알려도 안 듣는다',        desc:'말해도 사람들이 안 움직일 때'},
-  {g:'속한 판', k:'keepon',   set:'public', name:'계속 매달릴까',           desc:'오래 붙들었는데 지쳐갈 때'},
-  {g:'속한 판', k:'disagree', set:'people', name:'뜻이 갈려 부딪힌다',      desc:'가까운 사람과 견해가 갈릴 때'}
+  {g:'판이 기울 때', k:'decay',   set:'public', name:'속한 판이 나빠지고 있다', desc:'기우는 판을 보고 있을 때, 내가 어디에 설지'},
+  {g:'판이 기울 때', k:'speakup', set:'public', name:'목소리를 낼까',           desc:'나서서 말할지 묻어둘지'},
+  {g:'판이 기울 때', k:'unheard', set:'public', name:'알려도 안 듣는다',        desc:'말해도 사람들이 안 움직일 때'},
+  {g:'판이 기울 때', k:'keepon',  set:'public', name:'계속 매달릴까',           desc:'오래 붙들었는데 지쳐갈 때'}
 ];
+
+/* 맥락형 — 행위가 아니라 "누구와 / 어떤 판에서"라 물음꼴이 안 된다. 탭에서 줄을 갈라 놓는다. */
+q.sets.people.ctx = 1;
+q.sets.public.ctx = 1;
 
 /* 카드마다 검색어를 붙인다. 상황 한 줄을 적으면 이 말들로 카드를 추천한다.
    여섯 축 답을 추론하는 것이 아니라 카드만 고르는 일이라, 틀려도 사용자가 다른 것을 고르면 그만이다. */
@@ -602,6 +611,16 @@ Object.keys(q.sets).forEach(k => {
   s.L.concat(s.U).forEach((x, i) => {
     ['y','t','a','b','h'].forEach(f => { if (!x[f]) bad.push(`${k}/${i}: ${f} 빔`); });
   });
+});
+const gset = {};
+q.cards.forEach(c => { (gset[c.g] = gset[c.g] || new Set()).add(c.set); });
+Object.keys(gset).forEach(g => {
+  if (gset[g].size !== 1) bad.push(`그룹 ${g}: 원형 ${[...gset[g]].join('+')} 섞임`);
+});
+const setg = {};
+q.cards.forEach(c => { (setg[c.set] = setg[c.set] || new Set()).add(c.g); });
+Object.keys(setg).forEach(k => {
+  if (setg[k].size !== 1) bad.push(`원형 ${k}: 그룹 ${[...setg[k]].join('+')} 흩어짐`);
 });
 const keys = q.cards.map(c => c.k);
 if (keys.length !== new Set(keys).size) bad.push('카드 키 중복');
