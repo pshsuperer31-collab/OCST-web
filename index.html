@@ -89,6 +89,7 @@ header.top .sub{margin:0;color:var(--mute);font-size:13px}
 @media(max-width:760px){.cmp{grid-template-columns:1fr}}
 .cmp .card{margin:0}
 .cmpside{font-size:11px;letter-spacing:.16em;font-weight:700;color:var(--gold)}
+.cmpnote{margin:9px 0 0;font-size:13px;color:var(--mute);line-height:1.75}
 .minibtn{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);
   background:#fff;color:var(--mute);cursor:pointer;font-family:inherit}
 /* 序卦 사슬 — 앞뒤가 한 줄에 놓여야 어디서 와서 어디로 가는지가 보인다 */
@@ -946,6 +947,20 @@ function relOf(a,b){
   if(Math.abs(BYBIN[a].n-BYBIN[b].n)===1) return '두 괘가 <b>序卦</b>에서 이웃입니다 — 하나가 다른 하나의 다음 마디예요.';
   return '';
 }
+/* 문항 설계상 陽=갖춰짐 / 陰=안 갖춰짐이므로, 陰인 축은 "그 길로 가려면 채워야 할 것"이다.
+   다만 개수를 점수로 쓰면 안 된다 — 乾은 여섯이 다 陽인데 위험이 과속에 있다. 어디가 비었는지만 본다. */
+function axisName(D,k){ return (k<3?D.qs.L:D.qs.U)[k%3].y.replace(' · ',' '); }
+function emptyAxes(D){
+  var out=[]; for(var k=0;k<6;k++) if(!D.y[k]) out.push(axisName(D,k));
+  return out;
+}
+/* 하괘=내가 딛고 선 쪽 / 상괘=통제 못 하는 쪽 — 손댈 자리가 어느 쪽에 있느냐가 실행 난이도다.
+   길흉을 우열로 환산하지 않으면서 "어느 게 나은가"에 가장 가까이 가는 정직한 축. */
+function leverWhere(D){
+  return D.i<3
+    ? {in:true,  t:'하괘 · 내가 딛고 선 쪽'}
+    : {in:false, t:'상괘 · 내가 통제 못 하는 쪽'};
+}
 function renderCompare(sa,sb){
   var A=derive(sa), B=derive(sb);
   function side(D,tag){
@@ -968,6 +983,13 @@ function renderCompare(sa,sb){
     '</div>';
   }
   var same=A.V.n===B.V.n, rel=relOf(A.b,B.b);
+  var eA=emptyAxes(A), eB=emptyAxes(B);
+  var wA=leverWhere(A), wB=leverWhere(B);
+  var whereNote =
+    (wA.in && wB.in)   ? '두 쪽 다 손댈 자리가 <b>내 안</b>에 있습니다 — 실행 난이도로는 안 갈립니다. 무엇을 놓고 무엇을 잡을지의 문제예요.' :
+    (!wA.in && !wB.in) ? '두 쪽 다 손댈 자리가 <b>내 통제 밖</b>에 있습니다 — 어느 쪽이든 남이 움직여 주거나 때가 와야 합니다. 지금은 고를 때가 아닐 수 있어요.' :
+    wA.in ? 'A는 <b>내 손으로 바꿀 수 있는 자리</b>이고, B는 <b>밖이 움직여 줘야 하는 자리</b>입니다. 내가 못 바꾸는 것을 바꿔야 하는 쪽이 실행이 더 어렵습니다.'
+          : 'B는 <b>내 손으로 바꿀 수 있는 자리</b>이고, A는 <b>밖이 움직여 줘야 하는 자리</b>입니다. 내가 못 바꾸는 것을 바꿔야 하는 쪽이 실행이 더 어렵습니다.';
   var R=document.getElementById('result');
   R.innerHTML =
   '<div class="card hero"><div class="sec-label">견 주 기</div>'+
@@ -987,6 +1009,28 @@ function renderCompare(sa,sb){
       '<li><b>A로 가면:</b> '+A.qs.lever[A.i]+' — 도달점 '+BYBIN[A.jb].ko+'</li>'+
       '<li><b>B로 가면:</b> '+B.qs.lever[B.i]+' — 도달점 '+BYBIN[B.jb].ko+'</li>'+
     '</ul>'+
+
+    '<div style="margin-top:18px">'+
+      '<div class="cmpside">비 어  있 는  축</div>'+
+      '<ul class="acts" style="margin-top:8px">'+
+        '<li><b>A</b> — '+(eA.length?eA.join(' · ')+' <span style="color:var(--mute)">('+eA.length+'개)</span>'
+                                    :'여섯 축이 다 차 있습니다')+'</li>'+
+        '<li><b>B</b> — '+(eB.length?eB.join(' · ')+' <span style="color:var(--mute)">('+eB.length+'개)</span>'
+                                    :'여섯 축이 다 차 있습니다')+'</li>'+
+      '</ul>'+
+      '<p class="cmpnote">개수가 적은 쪽이 낫다는 뜻이 <b>아닙니다</b> — 乾은 여섯이 다 차 있는데도 '+
+      '위험이 과속에 있어요. 그 길로 가려면 <b>무엇을 채워야 하는가</b>를 보는 자리입니다.</p>'+
+    '</div>'+
+
+    '<div style="margin-top:18px">'+
+      '<div class="cmpside">손 댈  자 리 가  어 디 에</div>'+
+      '<ul class="acts" style="margin-top:8px">'+
+        '<li><b>A</b> — '+POSGRAM[A.i].n+'爻 · '+wA.t+'</li>'+
+        '<li><b>B</b> — '+POSGRAM[B.i].n+'爻 · '+wB.t+'</li>'+
+      '</ul>'+
+      '<p class="cmpnote">'+whereNote+'</p>'+
+    '</div>'+
+
     (rel?'<p style="margin:12px 0 0;font-size:14px;line-height:1.8;color:var(--ink)">'+rel+'</p>':'')+
   '</div>'+
   '<div class="note">두 판을 견줄 때 판정 글자보다 <b>손댈 지점</b>이 값납니다. '+
