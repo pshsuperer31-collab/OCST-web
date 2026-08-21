@@ -113,6 +113,15 @@ header.top .sub{margin:0;color:var(--mute);font-size:13px}
   background:#fff;color:var(--mute);cursor:pointer;font-family:inherit;font-weight:700;letter-spacing:.02em}
 .modebar button.on{background:#eef2f7;border-color:var(--navy);color:var(--navy)}
 .emptyhint{font-size:13.5px;color:var(--mute);line-height:1.8;margin:0;padding:4px 2px}
+/* 영역 안의 원형 하위 칩 — 관문이 아니라 선택이다.
+   기본은 [전체]라 안 눌러도 다 보이고, 누르면 좁혀진다. 클릭 두 번을 강제하지 않는다. */
+.subtabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px;padding-top:14px;border-top:1px dashed var(--line)}
+.subtabs button{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;color:var(--mute);cursor:pointer;font-family:inherit}
+.subtabs button:hover{border-color:var(--navy);color:var(--navy)}
+.subtabs button.on{background:#eef2f7;border-color:var(--navy);color:var(--navy);font-weight:700}
+.subtabs button i{font-style:normal;opacity:.55;margin-left:4px}
+.subtabs + .cardgrp{margin-top:18px}
 @media(max-width:560px){.tabs{gap:6px}.tabs button{font-size:12.5px;padding:6px 10px}}
 .tabs button:hover{border-color:var(--navy);color:var(--navy)}
 .tabs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
@@ -558,6 +567,7 @@ var REC='__rec__';
 var MODE_AREA='area', MODE_SET='set';
 var mode = MODE_AREA;
 var activeGrp = null;        // REC | 영역명 | 그룹명 | null(아직 안 고름)
+var subGrp = null;           // 영역 안에서 좁힌 원형(null=전체)
 var lastHits = [];
 
 function chipList(){ return mode===MODE_AREA ? QSETS.areas : GROUPS; }
@@ -603,14 +613,23 @@ function renderCards(hits, fromInput){
       (mode===MODE_AREA?'<b>어디서 걸린 일인지</b>':'<b>무엇을 묻는 일인지</b>')+' 하나 눌러보세요.</p>';
   } else if(mode===MODE_AREA && activeGrp!==REC){
     /* 영역 안에서는 원형별로 묶어 편다 — 헤더가 곧 동사라, 카드를 고르는 사이
-       "아 이게 ○○할까였구나"가 자연히 눈에 든다. 동사는 입구가 아니라 도착지다. */
+       "아 이게 ○○할까였구나"가 자연히 눈에 든다. 동사는 입구가 아니라 도착지다.
+       넓은 영역(일 29장)은 헤더만으로 훑기 버거우므로 하위 칩으로 좁힐 수 있게 둔다. */
     var list = cardsIn(activeGrp);
-    html += GROUPS.map(function(g){
+    var subs = GROUPS.filter(function(g){ return list.some(function(c){ return c.g===g; }); });
+    if(subs.indexOf(subGrp) < 0) subGrp = null;   // 영역이 바뀌면 좁힌 것은 풀린다
+    if(subs.length > 1){
+      html += '<div class="subtabs">'+
+        '<button'+(subGrp===null?' class="on"':'')+' data-s="">전체 <i>'+list.length+'</i></button>'+
+        subs.map(function(g){
+          var n = list.filter(function(c){ return c.g===g; }).length;
+          return '<button'+(subGrp===g?' class="on"':'')+' data-s="'+g+'">'+g+' <i>'+n+'</i></button>';
+        }).join('')+'</div>';
+    }
+    html += subs.filter(function(g){ return subGrp===null || subGrp===g; }).map(function(g){
       var sub = list.filter(function(c){ return c.g===g; });
-      return sub.length
-        ? '<div class="cardgrp">'+g+'</div><div class="qset-grid">'+
-          sub.map(function(c){ return cardBtn(c,false); }).join('')+'</div>'
-        : '';
+      return '<div class="cardgrp">'+g+'</div><div class="qset-grid">'+
+        sub.map(function(c){ return cardBtn(c,false); }).join('')+'</div>';
     }).join('');
   } else {
     html += '<div class="qset-grid">'+
@@ -622,11 +641,13 @@ renderCards();
 document.getElementById('qSet').addEventListener('click',function(e){
   var m=e.target.closest('.modebar button');
   if(m){
-    if(mode!==m.dataset.m){ mode=m.dataset.m; activeGrp = lastHits.length?REC:null; renderCards(lastHits); }
+    if(mode!==m.dataset.m){ mode=m.dataset.m; activeGrp = lastHits.length?REC:null; subGrp=null; renderCards(lastHits); }
     return;
   }
   var t=e.target.closest('.tabs button');
-  if(t){ activeGrp=t.dataset.g; renderCards(lastHits); return; }
+  if(t){ activeGrp=t.dataset.g; subGrp=null; renderCards(lastHits); return; }
+  var sb=e.target.closest('.subtabs button');
+  if(sb){ subGrp = sb.dataset.s || null; renderCards(lastHits); return; }
   var btn=e.target.closest('.qset-grid button');
   if(btn) pickCard(btn.dataset.k);
 });
