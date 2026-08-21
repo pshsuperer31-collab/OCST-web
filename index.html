@@ -113,6 +113,22 @@ header.top .sub{margin:0;color:var(--mute);font-size:13px}
   background:#fff;color:var(--mute);cursor:pointer;font-family:inherit;font-weight:700;letter-spacing:.02em}
 .modebar button.on{background:#eef2f7;border-color:var(--navy);color:var(--navy)}
 .emptyhint{font-size:13.5px;color:var(--mute);line-height:1.8;margin:0;padding:4px 2px}
+/* 어떻게 읽나 — 첫 화면 길이를 안 늘리려고 접어 둔다 */
+.howto{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+.howto summary{cursor:pointer;font-size:13.5px;color:var(--navy);font-weight:700;list-style:none}
+.howto summary::-webkit-details-marker{display:none}
+.howto summary::before{content:"＋ ";color:var(--gold)}
+.howto[open] summary::before{content:"－ "}
+.howto ul{margin:12px 0 0;padding-left:18px;font-size:13.5px;color:var(--mute);line-height:1.85}
+.howto li{margin-bottom:9px}
+.howto b{color:var(--ink)}
+/* ★한 줄로 — 주역을 몰라도 이 카드 하나로 쓸 수 있게. 아래는 전부 "왜 그런가"가 된다 */
+.oneline{border:1.5px solid var(--navy)}
+.ol-label{font-family:"Noto Serif KR",serif;font-size:25px;color:var(--navy);
+  margin:4px 0 0;line-height:1.45;letter-spacing:-.01em}
+.ol-sub{margin:14px 0 0;font-size:15px;line-height:1.9}
+.ol-note{margin:13px 0 0;font-size:13px;color:var(--mute);line-height:1.75}
+@media(max-width:560px){.ol-label{font-size:21px}}
 /* 영역 안의 원형 하위 칩 — 관문이 아니라 선택이다.
    기본은 [전체]라 안 눌러도 다 보이고, 누르면 좁혀진다. 클릭 두 번을 강제하지 않는다. */
 .subtabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px;padding-top:14px;border-top:1px dashed var(--line)}
@@ -271,6 +287,20 @@ ul.acts li{margin:5px 0;font-size:14px}
     <p style="font-size:13px;color:var(--mute);margin:10px 0 0;line-height:1.7">
       한 줄로 적어두면 나중에 다시 스캔할 때 궤적이 이어집니다.<br>
       <b>둘 중 하나를 고르는 중</b>이라면 한쪽을 먼저 스캔한 뒤, 리포트 아래에서 견주기를 누르세요.</p>
+
+    <details class="howto">
+      <summary>이게 어떤 도구인가요?</summary>
+      <ul>
+        <li><b>여섯 가지를 묻습니다.</b> 앞의 셋은 <b>내가 딛고 선 쪽</b>(마음·밑천·이미 한 것),
+            뒤의 셋은 <b>내가 통제 못 하는 쪽</b>(형편·열쇠 쥔 곳·끝 그림)이에요.</li>
+        <li>여섯 답이 정해지면 <b>상황의 구조가 하나로 잡힙니다.</b> 주역 64괘 중 그 구조에
+            해당하는 하나가 나오고, 오래 쌓인 그 괘의 풀이를 지금 판을 읽는 데 씁니다.</li>
+        <li><b>점이 아닙니다.</b> 무작위가 없어 같은 답이면 늘 같은 괘가 나오고,
+            상황이 움직인 뒤 다시 스캔하면 괘가 어디로 옮겨갔는지가 보입니다.</li>
+        <li><b>한자가 나오지만 몰라도 됩니다.</b> 칸마다 한국어로 풀어 두었어요.
+            원문을 그대로 둔 것은, 이 판정이 어디서 왔는지 감추지 않기 위해서입니다.</li>
+      </ul>
+    </details>
   </div>
 
   <div class="card hidden" id="cmpCard" style="border:1.5px solid var(--gold)">
@@ -295,8 +325,10 @@ ul.acts li{margin:5px 0;font-size:14px}
   <div class="card hero">
     <div class="sec-label" id="askLabel"></div>
     <div class="asktitle" id="askTitle"></div>
-    <p style="font-size:13px;color:var(--mute);margin:10px 0 0">
-      아래 6개는 <b>여섯 효</b>입니다. 답하시는 순간 괘가 하나로 정해집니다.</p>
+    <p style="font-size:13px;color:var(--mute);margin:10px 0 0;line-height:1.75">
+      아래 여섯 가지에 답하시면 <b>상황의 구조가 하나로 잡힙니다</b>.
+      앞의 셋은 내가 딛고 선 쪽, 뒤의 셋은 내가 통제 못 하는 쪽이에요.
+      이 여섯이 주역의 <b>여섯 효(爻)</b>가 됩니다.</p>
     <button class="backstep" id="back">← 묻는 것 바꾸기</button>
   </div>
 
@@ -850,6 +882,17 @@ function run(fromLink){
 
   var R=document.getElementById('result');
   R.innerHTML =
+  /* ★한 줄로 — 괘 이름보다 먼저, 주역 용어 없이 결론만 놓는다.
+     이 카드 하나로 앱을 쓸 수 있고, 아래 여섯 면은 전부 "왜 그렇게 읽었나"가 된다. */
+  '<div class="card oneline">'+
+    '<div class="sec-label">한  줄  로</div>'+
+    '<p class="ol-label">'+(G? G[0] : h.ko)+'</p>'+
+    '<p class="ol-sub">판정은 <span class="verdict '+V.c+'">'+V.n+'</span>'+
+      ' &nbsp;·&nbsp; 손댈 지점은 <b>'+QS().lever[i]+'</b>.</p>'+
+    '<p class="ol-note">아래는 그렇게 읽은 근거예요. 한자가 나오지만 몰라도 됩니다 — '+
+      '칸마다 한국어로 풀어 두었습니다.</p>'+
+  '</div>'+
+
   '<div class="card hero">'+
     '<div class="sec-label">① 지 금  판</div>'+
     '<div class="guarow">'+guaSVG(y,i)+
@@ -869,6 +912,17 @@ function run(fromLink){
     '<span class="verdict '+V.c+'">'+V.n+'</span>'+
     (yao && yao[2] ? '<span class="pansa">'+yao[2].split(' ').join(' · ')+'</span>' : '')+
     '<span class="tag" style="margin-left:8px">'+J.reason+'</span>'+
+    /* 위 배지의 한자를 바로 아래에서 한국어로 받는다.
+       원래 이 문장이 있었는데 "궁리노트가 없을 때만" 나오게 되어 있어서,
+       384효에 노트가 다 있는 지금은 한 번도 안 나오고 있었다. */
+    '<p style="margin:11px 0 0;font-size:14px;color:var(--mute);line-height:1.85">'+
+      (J.jung ? '이 자리는 <b>가운데(中)</b>를 얻어 치우치지 않습니다. '
+              : '이 자리는 <b>가운데가 아니라</b> 한쪽으로 치우치기 쉽습니다. ')+
+      (J.jeong ? '자리와 성질이 맞아(正) 무리가 없고, '
+               : '자리와 성질이 어긋나(不正) 무리가 따르며, ')+
+      (J.eung ? '짝하는 효와 <b>응(應)</b>이 서 있어 밖에서 받쳐주는 손이 있습니다.'
+              : '짝하는 효와 <b>응이 없어</b> 혼자 감당해야 하는 국면입니다.')+
+    '</p>'+
     (yao ? '<div class="yaotext">'+yao[0]+'<span class="tr">'+yao[1]+'</span></div>' : '')+
     '<div class="evi">'+
       (vKey
@@ -893,13 +947,7 @@ function run(fromLink){
             : '';
         })()+'</div>'+
         '<p class="posline">'+POSGRAM[i].n+'爻 — '+POSGRAM[i].g+'</p>'
-      : '<p style="margin:10px 0 0;font-size:14px">'+POSGRAM[i].g+'</p>'+
-        '<p style="margin:6px 0 0;font-size:14px;color:var(--mute)">'+
-          (J.jung?'이 자리는 <b>가운데</b>를 얻어 치우치지 않습니다. ':'')+
-          (J.eung?'짝하는 효와 <b>응(應)</b>이 서 있어 밖에서 받쳐주는 손이 있습니다.'
-                 :'짝하는 효와 <b>응이 없어</b> 혼자 감당해야 하는 국면입니다.')+
-          (J.jeong?'':' 자리와 성질이 어긋나(不正) 무리가 따릅니다.')+
-        '</p>')+
+      : '<p class="posline">'+POSGRAM[i].n+'爻 — '+POSGRAM[i].g+'</p>')+
     '</div>'+
 
   nbHtml+
