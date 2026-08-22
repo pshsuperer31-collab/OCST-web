@@ -180,7 +180,7 @@ const HELDOUT2 = [
  ['몇 년 만에 연락이 왔다', ['mend','relation']],
  ['지방으로 내려가 볼까', ['move','abroad']],
  ['요즘 잠을 못 잔다', ['bodysign','rest']],
- ['큰 계약을 따냈는데 감당이 될까', ['scaleup','offer']],
+ ['큰 계약을 따냈는데 감당이 될까', ['toobig','scaleup','offer']],   // toobig은 hold 원형이 생기며 뒤늦게 붙인 기대
  ['회비를 걷는 일을 떠맡았다', ['unfair','lessrole']],
  ['스승이 되어달라는 부탁을 받았다', ['favor']],
  ['세미나를 매달 하고 있는데 지친다', ['keepon','rest']],
