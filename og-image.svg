@@ -32,14 +32,11 @@
     </g>
   </g>
 
-  <text x="600" y="452" text-anchor="middle" fill="#002D62"
+  <text x="600" y="480" text-anchor="middle" fill="#002D62"
         font-family="'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif"
-        font-size="42" font-weight="700">지금 이 일이 어디쯤 왔고,</text>
-  <text x="600" y="508" text-anchor="middle" fill="#002D62"
-        font-family="'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif"
-        font-size="42" font-weight="700">무엇을 건드리면 달라지는지</text>
+        font-size="46" font-weight="700">주역을 통해서 바라보는 지금 상황</text>
 
-  <text x="600" y="565" text-anchor="middle" fill="#6b7280"
+  <text x="600" y="542" text-anchor="middle" fill="#6b7280"
         font-family="'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif"
-        font-size="24" font-weight="400">주역 64괘를 점이 아니라 진단 도구로 씁니다</text>
+        font-size="24" font-weight="400">점을 치지 않습니다 — 여섯 가지 답이 괘를 만듭니다</text>
 </svg>
